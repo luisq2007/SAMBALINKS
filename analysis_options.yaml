@@ -1,0 +1,47 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-raw-types: true
+    strict-inference: true
+
+  errors:
+    # Convertir en errores lo que rompe la mantenibilidad a medio plazo.
+    invalid_annotation_target: ignore
+    todo: ignore
+
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "lib/core/l10n/app_localizations*.dart"
+    - "build/**"
+    - ".dart_tool/**"
+
+linter:
+  rules:
+    # Estilo y legibilidad
+    - always_declare_return_types
+    - prefer_final_locals
+    - prefer_final_in_for_each
+    - prefer_single_quotes
+    - directives_ordering
+    - sort_child_properties_last
+    - unnecessary_lambdas
+    - unnecessary_parenthesis
+
+    # Corrección
+    - avoid_slow_async_io
+    - cancel_subscriptions
+    - close_sinks
+    - throw_in_finally
+    - unawaited_futures
+    - use_build_context_synchronously
+
+    # Arquitectura: sostiene las reglas de dependencias del plan (§5)
+    - avoid_relative_lib_imports
+    - depend_on_referenced_packages
+    - implementation_imports
+
+    # Preparación para el design system (§9): ningún literal de color suelto
+    # se detecta con un test propio, no con lint. Ver test/architecture_test.dart

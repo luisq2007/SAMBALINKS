@@ -1,0 +1,57 @@
+name: sambalinks
+description: "Tu bandeja personal para Internet."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  # Fijado por flutter_localizations del SDK de Flutter 3.41.6 (exige intl 0.20.2).
+  intl: ^0.20.2
+  receive_sharing_intent: 1.8.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/brand/
+
+  # Genera las clases de localización a partir de lib/core/l10n/*.arb (ver l10n.yaml).
+  generate: true
+
+# Iconos de lanzador generados desde el logo de marca.
+# Regenerar con: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/brand/icon_source.png"
+
+  android: "ic_launcher"
+  # El arte va a lienzo completo como capa de primer plano: el XML adaptativo
+  # aplica un inset del 16%, con lo que el círculo visible del lanzador (66% del
+  # lienzo) queda íntegramente dentro del arte y el icono se ve a sangre.
+  # El fondo es el azul del propio logo, para que ningún lanzador con máscara
+  # más ancha deje asomar un borde ajeno a la marca.
+  adaptive_icon_background: "#0D3C51"
+  adaptive_icon_foreground: "assets/brand/icon_foreground.png"
+
+  ios: true
+  # iOS rechaza iconos con canal alfa.
+  remove_alpha_ios: true
+
+  macos:
+    generate: true
+    image_path: "assets/brand/icon_source.png"

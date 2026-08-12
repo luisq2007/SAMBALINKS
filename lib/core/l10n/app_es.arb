@@ -1,0 +1,91 @@
+{
+  "@@locale": "es",
+
+  "appName": "SambaLinks",
+  "@appName": {
+    "description": "Nombre del producto. No se traduce."
+  },
+
+  "appTagline": "Tu bandeja personal para Internet",
+  "@appTagline": {
+    "description": "Descripción corta mostrada en Ajustes y en el estado vacío inicial."
+  },
+
+  "statusPending": "Pendiente",
+  "@statusPending": {
+    "description": "Estado interno: pending. Contenido guardado pero aún sin procesar."
+  },
+  "statusActive": "Activo",
+  "@statusActive": {
+    "description": "Estado interno: active. Contenido en uso o en investigación."
+  },
+  "statusDone": "Atendido",
+  "@statusDone": {
+    "description": "Estado interno: done. Contenido ya revisado."
+  },
+
+  "navHome": "Inicio",
+  "navKanban": "Kanban",
+  "navCategories": "Categorías",
+  "navSettings": "Ajustes",
+
+  "inbox": "Bandeja",
+  "@inbox": {
+    "description": "Enlaces sin categoría asignada. Es una consulta, no una categoría real."
+  },
+  "allLinks": "Todos los enlaces",
+  "uncategorized": "Sin categoría",
+
+  "link": "Enlace",
+  "links": "Enlaces",
+  "category": "Categoría",
+  "categories": "Categorías",
+  "note": "Nota",
+  "notes": "Notas",
+
+  "search": "Buscar",
+  "searchHint": "Buscar en SambaLinks…",
+  "filters": "Filtros",
+  "clearFilters": "Limpiar filtros",
+  "sort": "Ordenar",
+  "sortNewest": "Más recientes",
+  "sortOldest": "Más antiguos",
+  "sortRecentlyUpdated": "Actualizados recientemente",
+  "sortTitleAsc": "Título A-Z",
+  "sortTitleDesc": "Título Z-A",
+  "sortPlatform": "Plataforma",
+  "sortStatus": "Estado",
+
+  "add": "Añadir",
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "delete": "Eliminar",
+  "edit": "Editar",
+  "undo": "Deshacer",
+  "openOriginal": "Abrir original",
+  "copyUrl": "Copiar URL",
+  "share": "Compartir",
+  "refreshPreview": "Actualizar vista previa",
+  "@refreshPreview": {
+    "description": "Vuelve a consultar la URL. Nunca toca categorías, estado ni notas."
+  },
+
+  "settingsAppearance": "Apariencia",
+  "themeSystem": "Sistema",
+  "themeLight": "Claro",
+  "themeDark": "Oscuro",
+
+  "settingsData": "Datos",
+  "exportLibrary": "Exportar biblioteca",
+  "importLibrary": "Importar biblioteca",
+  "importMerge": "Combinar",
+  "importReplace": "Reemplazar",
+
+  "previewUnavailableTitle": "Vista previa no disponible",
+  "previewUnavailableBody": "Guardamos tu enlace, pero no pudimos recuperar su vista previa.",
+  "tryAgain": "Reintentar",
+
+  "inboxEmptyTitle": "Tu bandeja está vacía",
+  "inboxEmptyBody": "Comparte un enlace desde Instagram, X, Threads, Pinterest o cualquier sitio web y aparecerá aquí.",
+  "addFirstLink": "Añadir tu primer enlace"
+}
