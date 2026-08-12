@@ -50,7 +50,7 @@ La obtención de metadata **directa desde el dispositivo** expone la IP del usua
 | | `sqlite3` | ^3.5.1 | Desde 3.x incluye los binarios; `sqlite3_flutter_libs` está EOL |
 | Estado | `flutter_riverpod` | ^3.4.2 | + `riverpod_annotation` ^4.0.6, `riverpod_generator` ^4.0.8 |
 | Navegación | `go_router` | ^17.5.0 | `StatefulShellRoute` para shell persistente |
-| Compartir (entrada) | `receive_sharing_intent` | ^1.9.0 | Mantenido (última publicación 2026-06-24) |
+| Compartir (entrada) | `receive_sharing_intent` | **1.8.1 (anclado)** | 1.9.0 exige Swift Package Manager y sin él no compila ni Android. Ver R7 y §16 |
 | Compartir (salida) | `share_plus` | ^13.3.0 | Cubre iOS, Android y macOS — las 3 plataformas de 1.0 |
 | Red | `dio` | ^5.11.0 | Timeouts, límite de bytes, control de redirects |
 | Parsing HTML | `html` | ^0.15.6 | |
