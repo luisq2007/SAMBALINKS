@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
-import '../../../core/utils/url_extractor.dart';
+import '../../links/domain/url_extractor.dart';
+import '../../links/domain/url_normalizer.dart';
 import '../domain/incoming_share.dart';
 
 /// Puente con la hoja de compartir del sistema.
@@ -49,9 +50,11 @@ class ShareReceiver {
         .map((SharedMediaFile m) {
           // En un compartido de texto el plugin deja el contenido en `path`.
           final String raw = m.path;
+          final String? url = extractFirstUrl(raw);
           return IncomingShare(
             rawText: raw,
-            url: extractFirstUrl(raw),
+            url: url,
+            normalized: url == null ? null : UrlNormalizer.normalize(url),
             arrival: arrival,
             receivedAt: now,
           );

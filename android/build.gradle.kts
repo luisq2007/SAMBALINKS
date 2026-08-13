@@ -19,12 +19,18 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// receive_sharing_intent 1.9.0 usa el bloque `kotlin { compilerOptions { … } }`
+// pero su build.gradle no aplica el plugin de Kotlin: da por supuesto AGP 9.x,
+// que ya lo trae integrado. Este proyecto usa el AGP 8.11.1 que genera Flutter
+// 3.41.6, así que hay que aplicárselo nosotros.
+//
+// Se puede borrar cuando el proyecto suba a AGP 9.
 // receive_sharing_intent 1.8.1 declara jvmTarget 1.8 mientras el proyecto
 // compila con 21, y Gradle aborta por la incoherencia. Se unifica a 17.
 //
-// PROVISIONAL: este bloque existe sólo porque estamos anclados a la versión
-// 1.8.1 del plugin (octubre 2024). Al pasar a 1.9.0 — que exige habilitar
-// Swift Package Manager — se puede borrar entero.
+// PROVISIONAL: existe sólo porque estamos anclados a 1.8.1. La versión 1.9.0
+// no necesita este parche, pero exige AGP 9.x — ver §16 del plan. Ambos, este
+// bloque y el anclaje, desaparecen cuando el proyecto suba a AGP 9.
 subprojects {
     plugins.withId("org.jetbrains.kotlin.android") {
         extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension> {

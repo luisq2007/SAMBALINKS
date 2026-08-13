@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/providers.dart';
 import '../../../core/theme/tokens.dart';
+import '../../categories/domain/category.dart';
 import '../data/share_receiver.dart';
 import '../domain/incoming_share.dart';
 
@@ -12,16 +15,16 @@ import '../domain/incoming_share.dart';
 /// No es UI de producto: su único trabajo es demostrar que un enlace
 /// compartido desde otra aplicación llega hasta aquí, en frío y en caliente.
 /// Se sustituye por Quick Save en la Fase 12.
-class ShareSpikeScreen extends StatefulWidget {
+class ShareSpikeScreen extends ConsumerStatefulWidget {
   const ShareSpikeScreen({required this.onToggleTheme, super.key});
 
   final VoidCallback onToggleTheme;
 
   @override
-  State<ShareSpikeScreen> createState() => _ShareSpikeScreenState();
+  ConsumerState<ShareSpikeScreen> createState() => _ShareSpikeScreenState();
 }
 
-class _ShareSpikeScreenState extends State<ShareSpikeScreen> {
+class _ShareSpikeScreenState extends ConsumerState<ShareSpikeScreen> {
   final ShareReceiver _receiver = ShareReceiver();
   final List<IncomingShare> _shares = <IncomingShare>[];
   StreamSubscription<List<IncomingShare>>? _subscription;
@@ -57,6 +60,9 @@ class _ShareSpikeScreenState extends State<ShareSpikeScreen> {
   Widget build(BuildContext context) {
     final L10n l10n = L10n.of(context);
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Crea las categorías de ejemplo la primera vez.
+    ref.watch(seedProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -126,34 +132,118 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-/// Muestra los tres estados con sus colores para poder revisar la paleta en
-/// ambos temas. Provisional: desaparece cuando llegue el design system (F6).
-class _StatusLegend extends StatelessWidget {
+/// Muestra los tres estados con sus colores y, debajo, las categorías leídas
+/// de la base de datos.
+///
+/// Las categorías no son decorativas: son la prueba de que la base se crea en
+/// el dispositivo, la librería nativa de SQLite está bien empaquetada y los
+/// providers llegan hasta la UI. Provisional, como toda esta pantalla.
+class _StatusLegend extends ConsumerWidget {
   const _StatusLegend();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final L10n l10n = L10n.of(context);
-    final SambaColors samba = Theme.of(context).extension<SambaColors>()!;
+    final ThemeData theme = Theme.of(context);
+    final SambaColors samba = theme.extension<SambaColors>()!;
+    final AsyncValue<List<Category>> categories = ref.watch(categoriesProvider);
 
-    return Wrap(
-      spacing: Spacing.sm,
-      runSpacing: Spacing.sm,
-      alignment: WrapAlignment.center,
+    return Column(
       children: <Widget>[
-        _StatusChip(
-          label: l10n.statusPending,
-          fg: samba.pendingFg,
-          bg: samba.pendingBg,
+        Wrap(
+          spacing: Spacing.sm,
+          runSpacing: Spacing.sm,
+          alignment: WrapAlignment.center,
+          children: <Widget>[
+            _StatusChip(
+              label: l10n.statusPending,
+              fg: samba.pendingFg,
+              bg: samba.pendingBg,
+            ),
+            _StatusChip(
+              label: l10n.statusActive,
+              fg: samba.activeFg,
+              bg: samba.activeBg,
+            ),
+            _StatusChip(
+              label: l10n.statusDone,
+              fg: samba.doneFg,
+              bg: samba.doneBg,
+            ),
+          ],
         ),
-        _StatusChip(
-          label: l10n.statusActive,
-          fg: samba.activeFg,
-          bg: samba.activeBg,
+        const SizedBox(height: Spacing.xl),
+        Text(
+          l10n.categories.toUpperCase(),
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+            letterSpacing: 1.2,
+          ),
         ),
-        _StatusChip(label: l10n.statusDone, fg: samba.doneFg, bg: samba.doneBg),
+        const SizedBox(height: Spacing.sm),
+        categories.when(
+          data: (List<Category> items) => Wrap(
+            spacing: Spacing.sm,
+            runSpacing: Spacing.sm,
+            alignment: WrapAlignment.center,
+            children: <Widget>[
+              for (final Category category in items)
+                _CategoryChip(category: category),
+            ],
+          ),
+          loading: () => const SizedBox(
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          error: (Object error, StackTrace _) => Text(
+            '$error',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.error,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
       ],
     );
+  }
+}
+
+class _CategoryChip extends StatelessWidget {
+  const _CategoryChip({required this.category});
+
+  final Category category;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final Color background = _parseHex(category.color) ?? theme.colorScheme.surface;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(Radii.chip),
+        border: Border.all(color: theme.colorScheme.outline),
+      ),
+      child: Text(
+        category.name,
+        // Los colores de categoría son tonos claros de la paleta, así que el
+        // texto va siempre en el tono más oscuro.
+        style: theme.textTheme.labelLarge?.copyWith(color: SambaPalette.raven),
+      ),
+    );
+  }
+
+  static Color? _parseHex(String? hex) {
+    if (hex == null || !hex.startsWith('#') || hex.length != 7) {
+      return null;
+    }
+    final int? value = int.tryParse(hex.substring(1), radix: 16);
+    return value == null ? null : Color(0xFF000000 | value);
   }
 }
 
@@ -246,12 +336,41 @@ class _ShareTile extends StatelessWidget {
             ),
             const SizedBox(height: Spacing.md),
             SelectableText(
-              share.url ?? 'Sin URL en el texto compartido',
+              share.normalized?.canonical ??
+                  share.url ??
+                  'Sin URL en el texto compartido',
               style: theme.textTheme.titleSmall?.copyWith(
                 color: share.hasUrl ? colors.primary : samba.pendingFg,
               ),
             ),
-            if (share.rawText != share.url) ...<Widget>[
+            if (share.normalized != null) ...<Widget>[
+              const SizedBox(height: Spacing.sm),
+              Row(
+                children: <Widget>[
+                  Text(
+                    share.platform.value,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    '  ·  ${share.normalized!.domain}',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                  if (share.needsNetworkResolution)
+                    Text(
+                      '  ·  acortado',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: samba.pendingFg,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+            if (share.rawText != share.normalized?.canonical) ...<Widget>[
               const SizedBox(height: Spacing.sm),
               Text(
                 share.rawText,

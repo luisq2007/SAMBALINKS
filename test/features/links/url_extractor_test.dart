@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sambalinks/core/utils/url_extractor.dart';
+import 'package:sambalinks/features/links/domain/url_extractor.dart';
 
 void main() {
   group('extractFirstUrl', () {

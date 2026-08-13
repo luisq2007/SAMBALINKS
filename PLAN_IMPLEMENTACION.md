@@ -506,7 +506,13 @@ La parte cara: es un target nativo en Swift, no código Flutter.
 
 ---
 
-#### Fase 2 — Capa de datos · 2 d
+#### Fase 2 — Capa de datos · 2 d — ✅ COMPLETADA (2026-08-12)
+
+**Verificación:** 36 tests de base de datos en verde sobre `NativeDatabase.memory()`. Suite completa: 52 tests, `flutter analyze` sin issues.
+
+Pendiente de esta fase, se hará al empezar la F3: **datos semilla** (3 categorías de ejemplo en el primer arranque). Necesita el repositorio para no escribir en la base desde la UI, así que va con F3 en lugar de adelantarse aquí.
+
+**Incidencia de entorno:** `sqlite3` 3.5.1 descarga su librería nativa desde GitHub al ejecutar tests, y el cliente HTTP de Dart falla la descarga en esta máquina (`curl` a la misma URL sí funciona). Solución aplicada: colocar el binario a mano en `.dart_tool/hooks_runner/shared/sqlite3/build/download-<sha8>/`, que es donde el hook cachea y valida por SHA256. **Si se borra `.dart_tool`, hay que repetirlo** — documentado en `docs/` para no perder media hora la próxima vez.
 
 **Entregables**
 - Tablas de §6 en Drift + generación
@@ -520,7 +526,15 @@ La parte cara: es un target nativo en Swift, no código Flutter.
 
 ---
 
-#### Fase 3 — Dominio, repositorios y providers · 1.5 d
+#### Fase 3 — Dominio, repositorios y providers · 1.5 d — ✅ COMPLETADA (2026-08-12)
+
+**Verificación:** 79 tests en verde. Comprobado además en emulador Android: la base se crea (`app_flutter/sambalinks.sqlite`), la semilla corre y las tres categorías llegan a la pantalla por repositorio → provider → widget.
+
+**Desviación del plan: sin `riverpod_generator`.** Exige `analyzer ^12` mientras `drift_dev` exige `^13`, y el `meta 1.17.0` que fija el SDK de Flutter 3.41.6 cierra cualquier salida. Los providers se declaran a mano, que es equivalente y quita una dependencia de generación. `freezed` sí convive sin problema y se usa para las entidades.
+
+**Corrección aplicada durante la fase:** el test de arquitectura pasaba pero no valía. Comprobaba sólo imports directos, y `link_repository.dart` (dominio) alcanzaba Drift a través del DAO. Se movieron `enums.dart`, `CardFilter` y `CardSort` al dominio — es el DAO quien los importa ahora, no al revés — y el test recorre la **clausura transitiva** de imports. Verificado que sabe fallar: al introducir la violación a propósito señala el fichero exacto que la causa.
+
+**Nota sobre los tests de widget:** no usan Drift. Sustituyen los providers por dobles. Mezclar la base real en tests de widget dejaba timers vivos y colgaba el cierre de la base dentro de la zona de async simulado de `flutter_test`. La persistencia ya la cubren los 54 tests de DAO y repositorio; el cableado de extremo a extremo se verifica en dispositivo y quedará en los tests de integración de la F16.
 
 **Entregables**
 - Entidades `freezed`: `LinkCard`, `Category`, `AppSettings` (sin dependencia de Flutter ni Drift)
@@ -533,7 +547,13 @@ La parte cara: es un target nativo en Swift, no código Flutter.
 
 ---
 
-#### Fase 4 — Normalización de URL y detección de plataforma · 1.5 d
+#### Fase 4 — Normalización de URL y detección de plataforma · 1.5 d — ✅ COMPLETADA (2026-08-12)
+
+**Verificación:** 51 tests del pipeline de URL (41 del normalizador + 10 del extractor), por encima del mínimo de 40 que pedía esta fase. Suite completa: 120 tests. Comprobado en emulador con las cinco transformaciones que más importan, compartidas como texto real.
+
+**Desviación de §5:** el pipeline no vive en `core/utils/` sino en `features/links/domain/`. Al mover `enums.dart` al dominio en la F3, dejar el normalizador en `core/` obligaba a que `core/` importara de `features/`, que es la dirección equivocada. Ahora todo lo que interpreta una URL —extractor, normalizador y detector de plataforma— está junto al dominio que le da sentido.
+
+**Decisión de diseño:** la canonicalización distingue dos regímenes. En redes sociales el contenido lo identifica la ruta, así que se descarta **todo** el query. En la web genérica los parámetros pueden ser significativos (`?page=2` es otro artículo), así que sólo se quita el seguimiento conocido y el resto se ordena alfabéticamente para que el orden no genere falsos duplicados.
 
 **Entregables**
 - `UrlNormalizer` con todo el pipeline y las reglas por plataforma de §7
@@ -892,23 +912,30 @@ Para desbloquear Android hoy, el proyecto usa `receive_sharing_intent: 1.8.1` (o
 
 La API que usamos (`instance`, `getInitialMedia`, `getMediaStream`, `reset`, `setMockValues`) es idéntica en ambas versiones, así que el código Dart no cambia con ninguna de las dos opciones.
 
-### Opción A — Habilitar SPM y volver a 1.9.0 (recomendada)
+### Corrección del 2026-08-12: SPM era necesario pero no suficiente
 
-```bash
-flutter config --enable-swift-package-manager
-```
+Swift Package Manager quedó habilitado en la máquina (`flutter config --enable-swift-package-manager`) y eso **sí** levantó el bloqueo de herramientas: `pub get` deja de abortar. Al intentar compilar Android con 1.9.0 apareció un segundo problema, independiente del primero:
 
-- ✅ Plugin mantenido (última publicación junio 2026)
-- ✅ Se borra el parche de Gradle
-- ✅ SPM es la dirección oficial de Flutter; el problema no reaparece
-- ⚠️ Es un ajuste **global** de la instalación de Flutter, no del proyecto. Los demás proyectos Flutter de la máquina (SambaPets, Samba Domus) recibirán integración SPM en su Xcode project la próxima vez que se compilen para iOS. CocoaPods y SPM conviven, así que el riesgo es bajo, pero el cambio es visible en el diff de esos repositorios
-- ⚠️ Reversible con `flutter config --no-enable-swift-package-manager`
+El `build.gradle` de Android del plugin 1.9.0 da por supuesto **AGP 9.x**. En concreto:
 
-### Opción B — Mantener 1.8.1
+1. Usa el bloque `kotlin { compilerOptions { … } }` sin aplicar el plugin de Kotlin, porque AGP 9 lo trae integrado. Con AGP 8: `Could not find method kotlin()`.
+2. Declara `compileSdk 37`, que el SDK instala como `android-37.0`. AGP 8.11 busca `android-37` a secas; la nomenclatura `major.minor` sólo la entiende AGP 9.
 
-- ✅ No toca nada fuera de este proyecto
-- ⚠️ Dependencia congelada en octubre 2024
-- ⚠️ Hay que mantener el parche de `jvmTarget` y arrastrarlo a cada actualización de Gradle o Kotlin
-- ⚠️ El problema reaparece en F1B: es la versión que documenta el flujo de Share Extension moderno
+Se intentaron parches puntuales para ambos. El segundo se resolvió, pero entonces las fuentes Kotlin del plugin dejaron de compilarse en la librería (`cannot find symbol ReceiveSharingIntentPlugin`), porque aplicar el plugin de Kotlin desde fuera no queda correctamente encadenado con `com.android.library`. Tres parches apilados sin build verde: se abandonó esa vía.
 
-**Recomendación:** Opción A, ejecutada por ti en un momento en que puedas recompilar los otros proyectos para iOS y confirmar que siguen bien. No es una decisión que deba tomarse dentro de este proyecto sin avisar, porque su efecto está fuera de él.
+**Conclusión:** 1.9.0 no es adoptable mientras el proyecto use el AGP 8.11.1 que genera Flutter 3.41.6. No es cuestión de configuración sino de versión de Android Gradle Plugin.
+
+### Estado adoptado
+
+- `receive_sharing_intent` **1.8.1** anclado, con el parche de `jvmTarget` en `android/build.gradle.kts`. Compila y funciona, verificado en emulador.
+- **SPM queda habilitado.** No se revierte: hace falta igualmente para la F1B (Share Extension de iOS), y es la dirección oficial de Flutter.
+
+### Cuándo revisarlo
+
+Cuando el proyecto suba a **AGP 9.x** — probablemente al actualizar Flutter, que es quien fija la versión de AGP en las plantillas. En ese momento:
+
+1. Subir `receive_sharing_intent` a `^1.9.0`
+2. Borrar el bloque `subprojects` de `android/build.gradle.kts`
+3. Reejecutar la verificación de la F1A (compartir en frío y en segundo plano)
+
+No merece la pena forzar AGP 9 antes de que Flutter lo soporte en sus plantillas: el riesgo de romper la cadena de compilación supera al de mantener un plugin anclado con un parche de 20 líneas documentado.
