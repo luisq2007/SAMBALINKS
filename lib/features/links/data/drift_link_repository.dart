@@ -44,8 +44,9 @@ class DriftLinkRepository implements LinkRepository {
       _db.cardsDao.watchCount(filter);
 
   @override
-  Stream<Map<CardStatus, int>> watchCountsByStatus() =>
-      _db.cardsDao.watchCountsByStatus();
+  Stream<Map<CardStatus, int>> watchCountsByStatus([
+    CardFilter filter = const CardFilter(),
+  ]) => _db.cardsDao.watchCountsByStatus(filter);
 
   @override
   Future<LinkCard?> findById(String id) async =>

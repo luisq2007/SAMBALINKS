@@ -90,7 +90,7 @@ class _FakeLinks implements LinkRepository {
       Stream<int>.value(card == null ? 0 : 1);
 
   @override
-  Stream<Map<CardStatus, int>> watchCountsByStatus() =>
+  Stream<Map<CardStatus, int>> watchCountsByStatus([CardFilter filter = const CardFilter()]) =>
       Stream<Map<CardStatus, int>>.value(<CardStatus, int>{
         for (final CardStatus value in CardStatus.values)
           value: card?.status == value ? 1 : 0,

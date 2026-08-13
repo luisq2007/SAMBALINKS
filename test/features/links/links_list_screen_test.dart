@@ -124,6 +124,18 @@ Future<void> _pumpList(
                   .length,
           }),
         ),
+        // Contadores acotados al ámbito: los usa la fila de pestañas desde la
+        // F10, para que dentro de la Bandeja o de una categoría no muestren
+        // totales de toda la biblioteca.
+        scopedStatusCountsProvider.overrideWith(
+          (Ref ref, LinkQuery query) =>
+              Stream<Map<CardStatus, int>>.value(<CardStatus, int>{
+                for (final CardStatus status in CardStatus.values)
+                  status: _applyQuery(cards, query)
+                      .where((domain.LinkCard c) => c.status == status)
+                      .length,
+              }),
+        ),
         categoriesProvider.overrideWith(
           (Ref ref) => Stream<List<Category>>.value(categories),
         ),

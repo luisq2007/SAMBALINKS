@@ -185,6 +185,16 @@ final StreamProvider<Map<CardStatus, int>> statusCountsProvider =
       (Ref ref) => ref.watch(linkRepositoryProvider).watchCountsByStatus(),
     );
 
+/// Contadores por estado acotados a un ámbito (Bandeja, categoría, búsqueda).
+///
+/// El `statusCountsProvider` global se mantiene para las insignias de la
+/// navegación, donde el total sí es lo que se quiere.
+final scopedStatusCountsProvider = StreamProvider.autoDispose
+    .family<Map<CardStatus, int>, LinkQuery>(
+      (Ref ref, LinkQuery query) =>
+          ref.watch(linkRepositoryProvider).watchCountsByStatus(query.filter),
+    );
+
 /// Número de enlaces sin categoría: el contador de la Bandeja.
 final StreamProvider<int> inboxCountProvider = StreamProvider<int>(
   (Ref ref) => ref

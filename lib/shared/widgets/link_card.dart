@@ -92,12 +92,20 @@ class _MobileContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      // stretch y no start: sin el bloque de imagen, que antes forzaba el
+      // ancho, una columna alineada a start encoge la tarjeta al tamaño de su
+      // texto y deja media pantalla vacía.
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        AspectRatio(
-          aspectRatio: 16 / 7,
-          child: _PreviewImage(card: card),
-        ),
+        // Sin imagen no se reserva el bloque de vista previa. Instagram, X y
+        // Facebook caen al fallback casi siempre (§8.3), así que dibujar aquí
+        // un rectángulo vacío convertiría la biblioteca en una hilera de
+        // huecos grises. Si sólo hay enlace, la tarjeta es sólo el enlace.
+        if (card.hasPreviewImage)
+          AspectRatio(
+            aspectRatio: 16 / 7,
+            child: _PreviewImage(card: card),
+          ),
         Padding(
           padding: const EdgeInsets.all(Spacing.lg),
           child: _CardDetails(card: card, categories: categories),

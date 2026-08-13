@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/providers.dart';
+import '../../../core/routing/routes.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/link_card.dart' as ui;
@@ -103,8 +104,16 @@ class _LinksListScreenState extends ConsumerState<LinksListScreen> {
     final CardFilter effectiveFilter = _filters.toCardFilter(query: _query);
     final LinkQuery countQuery = LinkQuery(filter: effectiveFilter);
     final int? total = ref.watch(linkCountProvider(countQuery)).asData?.value;
+    // Los contadores de las pestañas se acotan al ámbito visible pero ignoran
+    // el filtro de estado: dentro de la Bandeja deben sumar los de la Bandeja,
+    // y seleccionar "Pendiente" no puede poner las demás pestañas a cero.
+    final LinkQuery statusCountQuery = LinkQuery(
+      filter: _filters
+          .withStatuses(const <CardStatus>{})
+          .toCardFilter(query: _query),
+    );
     final Map<CardStatus, int> statusCounts =
-        ref.watch(statusCountsProvider).asData?.value ??
+        ref.watch(scopedStatusCountsProvider(statusCountQuery)).asData?.value ??
         const <CardStatus, int>{};
     final List<Category> categories =
         ref.watch(categoriesProvider).asData?.value ?? const <Category>[];
@@ -152,6 +161,11 @@ class _LinksListScreenState extends ConsumerState<LinksListScreen> {
           sort: sort,
           compact: _compact,
           statusCounts: statusCounts,
+          inboxCount: ref.watch(inboxCountProvider).asData?.value ?? 0,
+          // En la propia Bandeja el acceso desaparece.
+          onOpenInbox: widget.initialFilters.uncategorized
+              ? null
+              : () => context.go(AppRoutes.inbox),
           onSearchChanged: _search,
           onClearSearch: _clearSearch,
           onStatusChanged: (Set<CardStatus> statuses) =>
@@ -482,6 +496,8 @@ class _ListToolbar extends StatelessWidget {
     required this.sort,
     required this.compact,
     required this.statusCounts,
+    required this.inboxCount,
+    required this.onOpenInbox,
     required this.onSearchChanged,
     required this.onClearSearch,
     required this.onStatusChanged,
@@ -497,6 +513,11 @@ class _ListToolbar extends StatelessWidget {
   final CardSort sort;
   final bool compact;
   final Map<CardStatus, int> statusCounts;
+  final int inboxCount;
+
+  /// `null` cuando la lista ya está acotada a la Bandeja: no tiene sentido
+  /// ofrecer entrar donde ya estás.
+  final VoidCallback? onOpenInbox;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onClearSearch;
   final ValueChanged<Set<CardStatus>> onStatusChanged;
@@ -588,6 +609,19 @@ class _ListToolbar extends StatelessWidget {
                           filters.statuses.length == 1 &&
                           filters.statuses.contains(status),
                       onSelected: () => onStatusChanged(<CardStatus>{status}),
+                    ),
+                  ],
+                  // La Bandeja es el centro del flujo del PRD (§16): todo lo
+                  // compartido cae ahí sin categoría. Hasta ahora sólo se
+                  // alcanzaba desde la barra lateral de escritorio, así que en
+                  // móvil —la plataforma prioritaria— era invisible.
+                  if (onOpenInbox != null) ...<Widget>[
+                    const SizedBox(width: Spacing.sm),
+                    _StatusChoice(
+                      label: l10n.inbox,
+                      count: inboxCount,
+                      selected: false,
+                      onSelected: onOpenInbox!,
                     ),
                   ],
                 ],

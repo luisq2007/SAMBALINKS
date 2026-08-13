@@ -346,11 +346,15 @@ Esto no es pesimismo: es el criterio para diseñar el fallback como algo intenci
 | Threads | ⚠️ variable |
 | TikTok | ⚠️ oEmbed a veces responde |
 | Instagram | ❌ muro de login en la mayoría de casos |
-| X / Twitter | ❌ bloqueado sin autenticación |
+| X / Twitter | ⚠️ variable — **corregido 2026-08-13**: en prueba real devolvió título, descripción e imagen de un tuit público. Ni bloqueado siempre, ni fiable |
 | Facebook | ❌ bloqueado |
 | LinkedIn | ❌ posts requieren login; artículos públicos a veces sí |
 
-**Consecuencia de diseño:** el card en estado `partial` debe verse *bien*, no roto. Fondo con el color de marca de la plataforma, su icono, dominio y fecha. Un usuario que guarda 20 posts de Instagram debe ver una cuadrícula elegante, no 20 huecos grises.
+**Consecuencia de diseño:** el card en estado `partial` debe verse *bien*, no roto.
+
+**Resuelto el 2026-08-13, y no como estaba previsto.** La idea original era rellenar el hueco con el color y el icono de la plataforma. En pantalla eso seguía siendo un rectángulo 16:7 vacío, sólo que de colores. La solución que funciona es la contraria: **si no hay imagen, la tarjeta no dibuja el bloque de vista previa**. Queda una tarjeta compacta con título, plataforma, dominio, estado y fecha. Si sólo se guardó el enlace, la tarjeta es sólo el enlace.
+
+Efecto secundario que hubo que corregir: al quitar el bloque, la columna dejó de tener un hijo que forzara el ancho y las tarjetas sin imagen se encogían a media pantalla. Se resolvió con `CrossAxisAlignment.stretch`.
 
 ### 8.4 Persistencia de imágenes (R5)
 
@@ -749,7 +753,18 @@ tarjeta canonicalizada, en Pendiente, y la lista pasa de 0 a 1.
 
 ---
 
-#### Fase 10 — Categorías y Bandeja · 2 d
+#### Fase 10 — Categorías y Bandeja · 2 d — ✅ COMPLETADA (2026-08-13)
+
+**Ya existía** (construido junto a las F7–F9): CRUD de categorías con color e icono, reordenación por arrastre, borrado con confirmación que respeta los enlaces, hoja "Administrar categorías" desde el menú del enlace, y las rutas `/inbox` y `/categories/:id`.
+
+**Faltaba, y era lo importante:**
+
+1. **La Bandeja no tenía puerta de entrada en móvil.** Sólo se alcanzaba desde la barra lateral de escritorio. En la plataforma prioritaria, el centro del flujo del PRD (§16) era invisible. Se añadió como chip con contador en vivo junto a las pestañas de estado; dentro de la propia Bandeja desaparece.
+
+2. **Los contadores de las pestañas eran globales.** Dentro de la Bandeja se leía "Todos los enlaces · 3" mientras la lista decía "2 enlaces". Ahora `watchCountsByStatus` acepta un filtro de ámbito y hay un `scopedStatusCountsProvider`; el global se conserva para las insignias de navegación, donde el total sí es lo correcto. El filtro de estado se excluye del recuento a propósito: si no, seleccionar "Pendiente" pondría las demás pestañas a cero.
+
+**Verificación:** criterios 7–9 de §55 comprobados contra SQL — el mismo enlace en "Inspiración" e "Ideas" deja **3 registros en `cards` y 2 en `card_categories`**, sin duplicar. 193 tests.
+
 
 **Entregables**
 - CRUD de categorías con selector de color e icono

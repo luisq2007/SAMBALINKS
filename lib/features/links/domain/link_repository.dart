@@ -19,7 +19,7 @@ abstract interface class LinkRepository {
 
   Stream<int> watchCount([CardFilter filter]);
 
-  Stream<Map<CardStatus, int>> watchCountsByStatus();
+  Stream<Map<CardStatus, int>> watchCountsByStatus([CardFilter filter]);
 
   Future<LinkCard?> findById(String id);
 

@@ -88,11 +88,19 @@ class CardsDao extends DatabaseAccessor<AppDatabase> with _$CardsDaoMixin {
 
   /// Contadores por estado en una sola consulta, para los encabezados del
   /// Kanban y las pestañas de la lista.
-  Stream<Map<CardStatus, int>> watchCountsByStatus() {
+  ///
+  /// [filter] acota el recuento al ámbito visible. Sin él, dentro de la Bandeja
+  /// o de una categoría las pestañas mostrarían totales de toda la biblioteca
+  /// mientras la lista enseña un subconjunto. El propio filtro de estado se
+  /// ignora aquí: si no, seleccionar "Pendiente" pondría las demás a cero.
+  Stream<Map<CardStatus, int>> watchCountsByStatus([
+    CardFilter filter = const CardFilter(),
+  ]) {
     final Expression<int> total = cards.id.count();
     final JoinedSelectStatement<HasResultSet, dynamic> statement =
         selectOnly(cards)
           ..addColumns(<Expression<Object>>[cards.status, total])
+          ..where(_buildPredicate(cards, filter))
           ..groupBy(<Expression<Object>>[cards.status]);
 
     return statement.watch().map((List<TypedResult> rows) {
