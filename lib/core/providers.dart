@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../features/categories/data/drift_category_repository.dart';
 import '../features/categories/domain/category.dart';
@@ -8,10 +12,19 @@ import '../features/links/domain/enums.dart';
 import '../features/links/domain/link_card.dart';
 import '../features/links/domain/link_query.dart';
 import '../features/links/domain/link_repository.dart';
+import '../features/metadata/data/direct_metadata_provider.dart';
+import '../features/metadata/data/html_meta_strategy.dart';
+import '../features/metadata/data/local_metadata_image_store.dart';
+import '../features/metadata/data/metadata_enrichment_service.dart';
+import '../features/metadata/data/oembed_strategy.dart';
+import '../features/metadata/data/queued_metadata_provider.dart';
+import '../features/metadata/domain/metadata_image_store.dart';
+import '../features/metadata/domain/metadata_provider.dart';
 // Se oculta Category: Drift genera una homónima y aquí manda la del dominio.
 import 'database/app_database.dart' hide Category;
 import 'database/daos/settings_dao.dart';
 import 'database/seed.dart';
+import 'network/http_client.dart';
 
 /// Providers de la aplicación.
 ///
@@ -25,9 +38,7 @@ import 'database/seed.dart';
 ///
 /// En los tests se sobreescribe con una base en memoria mediante
 /// `overrideWithValue`.
-final Provider<AppDatabase> databaseProvider = Provider<AppDatabase>((
-  Ref ref,
-) {
+final Provider<AppDatabase> databaseProvider = Provider<AppDatabase>((Ref ref) {
   final AppDatabase database = AppDatabase();
   ref.onDispose(database.close);
   return database;
@@ -37,15 +48,56 @@ final Provider<SettingsDao> settingsDaoProvider = Provider<SettingsDao>(
   (Ref ref) => ref.watch(databaseProvider).settingsDao,
 );
 
+final Provider<Dio> metadataDioProvider = Provider<Dio>((Ref ref) {
+  final Dio dio = createMetadataDio();
+  ref.onDispose(() => dio.close(force: true));
+  return dio;
+});
+
+final Provider<SafeHttpClient> safeHttpClientProvider =
+    Provider<SafeHttpClient>(
+      (Ref ref) => SafeHttpClient(ref.watch(metadataDioProvider)),
+    );
+
+final FutureProvider<Directory> applicationSupportDirectoryProvider =
+    FutureProvider<Directory>((Ref ref) => getApplicationSupportDirectory());
+
 // --- Repositorios ---
 
-final Provider<LinkRepository> linkRepositoryProvider = Provider<LinkRepository>(
-  (Ref ref) => DriftLinkRepository(ref.watch(databaseProvider)),
-);
+final Provider<LinkRepository> linkRepositoryProvider =
+    Provider<LinkRepository>(
+      (Ref ref) => DriftLinkRepository(ref.watch(databaseProvider)),
+    );
 
 final Provider<CategoryRepository> categoryRepositoryProvider =
     Provider<CategoryRepository>(
       (Ref ref) => DriftCategoryRepository(ref.watch(databaseProvider)),
+    );
+
+final Provider<MetadataProvider> metadataProvider = Provider<MetadataProvider>((
+  Ref ref,
+) {
+  final SafeHttpClient client = ref.watch(safeHttpClientProvider);
+  final DirectMetadataProvider direct = DirectMetadataProvider(
+    oEmbed: OEmbedStrategy(client),
+    html: HtmlMetaStrategy(client),
+    httpClient: client,
+  );
+  return QueuedMetadataProvider(direct, maximumConcurrent: 3);
+});
+
+final Provider<MetadataImageStore> metadataImageStoreProvider =
+    Provider<MetadataImageStore>(
+      (Ref ref) => LocalMetadataImageStore(ref.watch(safeHttpClientProvider)),
+    );
+
+final Provider<MetadataEnrichmentService> metadataEnrichmentServiceProvider =
+    Provider<MetadataEnrichmentService>(
+      (Ref ref) => MetadataEnrichmentService(
+        links: ref.watch(linkRepositoryProvider),
+        metadata: ref.watch(metadataProvider),
+        images: ref.watch(metadataImageStoreProvider),
+      ),
     );
 
 // --- Consultas de enlaces ---
@@ -110,7 +162,8 @@ class LinkQuery {
   }
 }
 
-final linksProvider = StreamProvider.family<List<LinkCard>, LinkQuery>((Ref ref, LinkQuery query) {
+final linksProvider = StreamProvider.autoDispose
+    .family<List<LinkCard>, LinkQuery>((Ref ref, LinkQuery query) {
       return ref
           .watch(linkRepositoryProvider)
           .watchLinks(
@@ -120,6 +173,11 @@ final linksProvider = StreamProvider.family<List<LinkCard>, LinkQuery>((Ref ref,
             offset: query.offset,
           );
     });
+
+final linkCountProvider = StreamProvider.autoDispose.family<int, LinkQuery>(
+  (Ref ref, LinkQuery query) =>
+      ref.watch(linkRepositoryProvider).watchCount(query.filter),
+);
 
 /// Contadores por estado, para las pestañas de la lista y el Kanban.
 final StreamProvider<Map<CardStatus, int>> statusCountsProvider =
@@ -147,9 +205,35 @@ final StreamProvider<List<CategorySummary>> categorySummariesProvider =
     );
 
 final categoriesOfProvider = StreamProvider.family<List<Category>, String>(
-      (Ref ref, String cardId) =>
-          ref.watch(categoryRepositoryProvider).watchCategoriesOf(cardId),
+  (Ref ref, String cardId) =>
+      ref.watch(categoryRepositoryProvider).watchCategoriesOf(cardId),
+);
+
+// --- Preferencias de presentación ---
+
+final AsyncNotifierProvider<CardSortController, CardSort>
+cardSortPreferenceProvider =
+    AsyncNotifierProvider<CardSortController, CardSort>(CardSortController.new);
+
+class CardSortController extends AsyncNotifier<CardSort> {
+  @override
+  Future<CardSort> build() async {
+    final String? stored = await ref
+        .watch(settingsDaoProvider)
+        .read<String>(SettingsKeys.defaultSort);
+    return CardSort.values.firstWhere(
+      (CardSort value) => value.name == stored,
+      orElse: () => CardSort.newest,
     );
+  }
+
+  Future<void> setSort(CardSort sort) async {
+    state = AsyncData<CardSort>(sort);
+    await ref
+        .read(settingsDaoProvider)
+        .write(SettingsKeys.defaultSort, sort.name);
+  }
+}
 
 // --- Arranque ---
 
@@ -163,4 +247,12 @@ final FutureProvider<void> seedProvider = FutureProvider<void>((Ref ref) async {
     categories: ref.watch(categoryRepositoryProvider),
     settings: ref.watch(settingsDaoProvider),
   );
+});
+
+/// Elimina al arrancar archivos que ya no tienen tarjeta, sin bloquear más de
+/// un cuarto de segundo aunque la biblioteca sea grande.
+final FutureProvider<void> orphanImageCleanupProvider = FutureProvider<void>((
+  Ref ref,
+) async {
+  await ref.watch(metadataEnrichmentServiceProvider).cleanupOrphanedImages();
 });

@@ -10,7 +10,9 @@
 library;
 
 final RegExp _urlPattern = RegExp(
-  r'https?://[^\s<>"' r"'" r']+',
+  r'https?://[^\s<>"'
+  r"'"
+  r']+',
   caseSensitive: false,
 );
 

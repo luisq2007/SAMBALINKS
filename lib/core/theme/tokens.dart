@@ -34,6 +34,40 @@ abstract final class SambaPalette {
   static const Color aquaGlow = Color(0xFF6FD8F0);
   static const Color jadeInk = Color(0xFF12795A); // sobre Mint
   static const Color jadeGlow = Color(0xFF5FDCA4);
+
+  // Acciones destructivas y sus superficies de bajo énfasis.
+  static const Color coral = Color(0xFFB42318);
+  static const Color coralGlow = Color(0xFFFFB4AB);
+  static const Color coralSurface = Color(0xFFFFEDEA);
+  static const Color coralSurfaceDark = Color(0x33FFB4AB);
+
+  /// Opciones persistibles del selector de categorías. La clave hexadecimal
+  /// viaja en la base/JSON y el valor mantiene el color centralizado aquí.
+  static const Map<String, Color> categoryChoices = <String, Color>{
+    '#B9ECFA': arctic,
+    '#B9F7D8': mint,
+    '#FFF0BD': sand,
+    '#0D4C5C': lagoon,
+    '#0D514F': evergreen,
+    '#18343F': charcoal,
+  };
+
+  /// Convierte colores configurables de categoría sin introducir literales
+  /// dentro de widgets. Sólo admite RGB en formato `#RRGGBB`.
+  static Color? tryParseHex(String? hex) {
+    if (hex == null || !hex.startsWith('#') || hex.length != 7) {
+      return null;
+    }
+    final int? value = int.tryParse(hex.substring(1), radix: 16);
+    return value == null
+        ? null
+        : Color.fromARGB(
+            255,
+            (value >> 16) & 0xFF,
+            (value >> 8) & 0xFF,
+            value & 0xFF,
+          );
+  }
 }
 
 /// Colores semánticos que `ColorScheme` no sabe expresar.
@@ -47,6 +81,8 @@ class SambaColors extends ThemeExtension<SambaColors> {
     required this.activeBg,
     required this.doneFg,
     required this.doneBg,
+    required this.dangerFg,
+    required this.dangerBg,
   });
 
   /// Hover, seleccionado, sidebar activo. En oscuro sustituye a la sombra,
@@ -59,6 +95,8 @@ class SambaColors extends ThemeExtension<SambaColors> {
   final Color activeBg;
   final Color doneFg;
   final Color doneBg;
+  final Color dangerFg;
+  final Color dangerBg;
 
   static const SambaColors light = SambaColors(
     surfaceElevated: Color(0xFFE9EFF2),
@@ -68,6 +106,8 @@ class SambaColors extends ThemeExtension<SambaColors> {
     activeBg: SambaPalette.arctic,
     doneFg: SambaPalette.jadeInk,
     doneBg: SambaPalette.mint,
+    dangerFg: SambaPalette.coral,
+    dangerBg: SambaPalette.coralSurface,
   );
 
   static const SambaColors dark = SambaColors(
@@ -78,6 +118,8 @@ class SambaColors extends ThemeExtension<SambaColors> {
     activeBg: Color(0x336FD8F0),
     doneFg: SambaPalette.jadeGlow,
     doneBg: Color(0x335FDCA4),
+    dangerFg: SambaPalette.coralGlow,
+    dangerBg: SambaPalette.coralSurfaceDark,
   );
 
   @override
@@ -89,6 +131,8 @@ class SambaColors extends ThemeExtension<SambaColors> {
     Color? activeBg,
     Color? doneFg,
     Color? doneBg,
+    Color? dangerFg,
+    Color? dangerBg,
   }) {
     return SambaColors(
       surfaceElevated: surfaceElevated ?? this.surfaceElevated,
@@ -98,6 +142,8 @@ class SambaColors extends ThemeExtension<SambaColors> {
       activeBg: activeBg ?? this.activeBg,
       doneFg: doneFg ?? this.doneFg,
       doneBg: doneBg ?? this.doneBg,
+      dangerFg: dangerFg ?? this.dangerFg,
+      dangerBg: dangerBg ?? this.dangerBg,
     );
   }
 
@@ -114,6 +160,8 @@ class SambaColors extends ThemeExtension<SambaColors> {
       activeBg: Color.lerp(activeBg, other.activeBg, t)!,
       doneFg: Color.lerp(doneFg, other.doneFg, t)!,
       doneBg: Color.lerp(doneBg, other.doneBg, t)!,
+      dangerFg: Color.lerp(dangerFg, other.dangerFg, t)!,
+      dangerBg: Color.lerp(dangerBg, other.dangerBg, t)!,
     );
   }
 }
@@ -126,6 +174,7 @@ abstract final class Spacing {
   static const double lg = 16;
   static const double xl = 24;
   static const double xxl = 32;
+  static const double xxxl = 48;
 }
 
 /// Radios de esquina.
@@ -133,4 +182,20 @@ abstract final class Radii {
   static const double chip = 8;
   static const double card = 12;
   static const double sheet = 16;
+}
+
+/// Duraciones compartidas. Los widgets consultan además
+/// `MediaQuery.disableAnimations` antes de animar.
+abstract final class MotionDurations {
+  static const Duration micro = Duration(milliseconds: 120);
+  static const Duration transition = Duration(milliseconds: 220);
+  static const Duration panel = Duration(milliseconds: 320);
+}
+
+abstract final class MotionCurves {
+  static const Curve standard = Curves.easeOutCubic;
+}
+
+abstract final class TouchTargets {
+  static const double minimum = 44;
 }

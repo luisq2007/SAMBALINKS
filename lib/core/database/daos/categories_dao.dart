@@ -20,10 +20,12 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
   CategoriesDao(super.db);
 
   Stream<List<Category>> watchAll() {
-    return (select(categories)..orderBy(<OrderClauseGenerator<$CategoriesTable>>[
-      ($CategoriesTable t) => OrderingTerm.asc(t.sortOrder),
-      ($CategoriesTable t) => OrderingTerm.asc(t.name),
-    ])).watch();
+    return (select(categories)
+          ..orderBy(<OrderClauseGenerator<$CategoriesTable>>[
+            ($CategoriesTable t) => OrderingTerm.asc(t.sortOrder),
+            ($CategoriesTable t) => OrderingTerm.asc(t.name),
+          ]))
+        .watch();
   }
 
   /// Categorías con su contador, para la barra lateral (§37).
@@ -57,8 +59,9 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<Category?> findById(String id) {
-    return (select(categories)..where(($CategoriesTable t) => t.id.equals(id)))
-        .getSingleOrNull();
+    return (select(
+      categories,
+    )..where(($CategoriesTable t) => t.id.equals(id))).getSingleOrNull();
   }
 
   Future<Category?> findByName(String name) {
@@ -130,9 +133,10 @@ class CardCategoriesDao extends DatabaseAccessor<AppDatabase>
 
   Future<int> unassign({required String cardId, required String categoryId}) {
     return (delete(cardCategories)..where(
-      ($CardCategoriesTable t) =>
-          t.cardId.equals(cardId) & t.categoryId.equals(categoryId),
-    )).go();
+          ($CardCategoriesTable t) =>
+              t.cardId.equals(cardId) & t.categoryId.equals(categoryId),
+        ))
+        .go();
   }
 
   Future<void> setCategoriesOf(String cardId, Set<String> categoryIds) async {

@@ -119,22 +119,18 @@ class DriftCategoryRepository implements CategoryRepository {
   }
 
   @override
-  Future<void> assign({
-    required String cardId,
-    required String categoryId,
-  }) => _db.cardCategoriesDao.assign(
-    cardId: cardId,
-    categoryId: categoryId,
-    at: _now(),
-  );
+  Future<void> assign({required String cardId, required String categoryId}) =>
+      _db.cardCategoriesDao.assign(
+        cardId: cardId,
+        categoryId: categoryId,
+        at: _now(),
+      );
 
   @override
-  Future<void> unassign({
-    required String cardId,
-    required String categoryId,
-  }) => _db.cardCategoriesDao
-      .unassign(cardId: cardId, categoryId: categoryId)
-      .then((_) {});
+  Future<void> unassign({required String cardId, required String categoryId}) =>
+      _db.cardCategoriesDao
+          .unassign(cardId: cardId, categoryId: categoryId)
+          .then((_) {});
 
   @override
   Future<void> setCategoriesOf(String cardId, Set<String> categoryIds) =>

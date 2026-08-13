@@ -1,16 +1,13 @@
 {
   "@@locale": "es",
-
   "appName": "SambaLinks",
   "@appName": {
     "description": "Nombre del producto. No se traduce."
   },
-
   "appTagline": "Tu bandeja personal para Internet",
   "@appTagline": {
     "description": "Descripción corta mostrada en Ajustes y en el estado vacío inicial."
   },
-
   "statusPending": "Pendiente",
   "@statusPending": {
     "description": "Estado interno: pending. Contenido guardado pero aún sin procesar."
@@ -23,26 +20,43 @@
   "@statusDone": {
     "description": "Estado interno: done. Contenido ya revisado."
   },
-
   "navHome": "Inicio",
   "navKanban": "Kanban",
   "navCategories": "Categorías",
   "navSettings": "Ajustes",
-
+  "navigationCollapse": "Contraer navegación",
+  "navigationExpand": "Expandir navegación",
+  "navigationDestinationCount": "{label}, {count} enlaces",
+  "@navigationDestinationCount": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "wideDetailTitle": "Detalle del enlace",
+  "wideDetailBody": "Selecciona un enlace para ver y editar sus detalles sin salir de la lista.",
+  "kanbanEmptyTitle": "Organiza tu flujo",
+  "kanbanEmptyBody": "Tus enlaces aparecerán en columnas según su estado.",
+  "categoriesEmptyTitle": "Organiza por categorías",
+  "categoriesEmptyBody": "Crea categorías para encontrar tus enlaces por tema o proyecto.",
+  "settingsPlaceholderTitle": "Configura SambaLinks",
+  "settingsPlaceholderBody": "Personaliza la apariencia y administra los datos de tu biblioteca.",
   "inbox": "Bandeja",
   "@inbox": {
     "description": "Enlaces sin categoría asignada. Es una consulta, no una categoría real."
   },
   "allLinks": "Todos los enlaces",
   "uncategorized": "Sin categoría",
-
   "link": "Enlace",
   "links": "Enlaces",
   "category": "Categoría",
   "categories": "Categorías",
   "note": "Nota",
   "notes": "Notas",
-
   "search": "Buscar",
   "searchHint": "Buscar en SambaLinks…",
   "filters": "Filtros",
@@ -55,7 +69,197 @@
   "sortTitleDesc": "Título Z-A",
   "sortPlatform": "Plataforma",
   "sortStatus": "Estado",
-
+  "sortMenuTooltip": "Cambiar orden",
+  "viewCompact": "Vista compacta",
+  "viewComfortable": "Vista cómoda",
+  "loadMore": "Cargar más",
+  "loadingLinks": "Cargando enlaces",
+  "linksLoadErrorTitle": "No pudimos cargar tus enlaces",
+  "linksLoadErrorBody": "Tu biblioteca sigue guardada. Intenta cargarla de nuevo.",
+  "libraryEmptyTitle": "Tu biblioteca está vacía",
+  "libraryEmptyBody": "Guarda tu primer enlace para empezar a construir una biblioteca personal.",
+  "filterEmptyTitle": "Ningún enlace coincide con estos filtros",
+  "filterEmptyBody": "Prueba otra combinación o limpia los filtros para ver toda tu biblioteca.",
+  "searchEmptyTitle": "No encontramos “{query}”",
+  "@searchEmptyTitle": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "searchEmptyBody": "Prueba con otro título, dominio, nota, categoría o plataforma.",
+  "resultCount": "{count, plural, =0{Sin enlaces} =1{1 enlace} other{{count} enlaces}}",
+  "@resultCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterActiveCount": "{count, plural, =1{1 filtro activo} other{{count} filtros activos}}",
+  "@filterActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterSheetTitle": "Filtrar enlaces",
+  "filterApply": "Aplicar filtros",
+  "filterStatus": "Estado",
+  "filterPlatform": "Plataforma",
+  "filterCategory": "Categoría",
+  "filterDate": "Fecha guardada",
+  "filterPreview": "Vista previa",
+  "filterNotes": "Notas",
+  "filterAny": "Cualquiera",
+  "filterWithImage": "Con imagen",
+  "filterWithoutImage": "Sin imagen",
+  "filterWithNotes": "Con notas",
+  "filterWithoutNotes": "Sin notas",
+  "filterUncategorized": "Sólo sin categoría",
+  "filterDateAny": "Cualquier fecha",
+  "filterDateToday": "Hoy",
+  "filterDateLast7Days": "Últimos 7 días",
+  "filterDateLast30Days": "Últimos 30 días",
+  "platformInstagram": "Instagram",
+  "platformX": "X",
+  "platformThreads": "Threads",
+  "platformPinterest": "Pinterest",
+  "platformFacebook": "Facebook",
+  "platformTikTok": "TikTok",
+  "platformYouTube": "YouTube",
+  "platformLinkedIn": "LinkedIn",
+  "platformReddit": "Reddit",
+  "platformWeb": "Web",
+  "platformOther": "Otro",
+  "cardImageSemantics": "Vista previa de {title}",
+  "@cardImageSemantics": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "cardSelectSemantics": "Seleccionar {title}",
+  "@cardSelectSemantics": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "cardNotesAvailable": "Tiene notas",
+  "cardNoPreview": "Sin imagen",
+  "incomingLinkReceived": "Enlace recibido",
+  "dismiss": "Descartar",
+  "selectedLinksCount": "{count, plural, =1{1 enlace seleccionado} other{{count} enlaces seleccionados}}",
+  "@selectedLinksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearSelection": "Cancelar selección",
+  "detailTitleField": "Título",
+  "detailDescriptionField": "Descripción",
+  "detailNotesField": "Notas",
+  "detailSaving": "Guardando cambios…",
+  "detailSaved": "Cambios guardados",
+  "detailSaveError": "No pudimos guardar los cambios",
+  "detailRefreshSuccess": "Vista previa actualizada",
+  "detailRefreshError": "No pudimos actualizar la vista previa. El enlace sigue guardado.",
+  "detailDeleteConfirmTitle": "¿Eliminar este enlace?",
+  "detailDeleteConfirmBody": "Se quitará de tu biblioteca y de todas sus categorías.",
+  "detailDeleted": "Enlace eliminado",
+  "detailMoreActions": "Más acciones del enlace",
+  "detailChangeStatus": "Cambiar estado",
+  "detailManageCategories": "Administrar categorías",
+  "detailEdit": "Editar contenido",
+  "copyAsMarkdown": "Copiar como Markdown",
+  "urlCopied": "URL copiada",
+  "markdownCopied": "Enlace copiado como Markdown",
+  "shareLink": "Compartir enlace",
+  "metadataRefreshing": "Actualizando vista previa…",
+  "confirm": "Confirmar",
+  "openOriginalError": "No pudimos abrir el enlace original.",
+  "categoriesApply": "Guardar categorías",
+  "categoryNew": "Nueva categoría",
+  "categoryEdit": "Editar categoría",
+  "categoryName": "Nombre",
+  "categoryNameHint": "Ej. Ideas",
+  "categoryNameRequired": "Escribe un nombre para la categoría",
+  "categoryDuplicate": "Ya existe una categoría con ese nombre",
+  "categoryColor": "Color",
+  "categoryIcon": "Icono",
+  "categoryColorOption": "Color {number}",
+  "@categoryColorOption": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryIconOption": "Icono {number}",
+  "@categoryIconOption": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryActions": "Acciones de {name}",
+  "@categoryActions": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryOpen": "Abrir categoría {name}",
+  "@categoryOpen": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryLinkCount": "{count, plural, =0{Sin enlaces} =1{1 enlace} other{{count} enlaces}}",
+  "@categoryLinkCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryReorder": "Reordenar {name}",
+  "@categoryReorder": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryDeleteTitle": "¿Eliminar “{name}”?",
+  "@categoryDeleteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryDeleteBody": "Los enlaces no se eliminarán. Sólo perderán esta categoría y quedarán en la Bandeja si no tienen otra.",
+  "categoryDeleted": "Categoría eliminada; tus enlaces siguen guardados",
+  "categorySaveError": "No pudimos guardar la categoría",
+  "categoryLoadError": "No pudimos cargar tus categorías",
+  "categoryCreateFirst": "Crear primera categoría",
+  "categoryBack": "Volver a categorías",
+  "categoryMissingTitle": "Esta categoría ya no existe",
+  "categoryMissingBody": "Puede que haya sido eliminada en otra ventana.",
+  "inboxDescription": "Enlaces que todavía no tienen categoría",
+  "scopeClose": "Cerrar esta vista",
   "add": "Añadir",
   "save": "Guardar",
   "cancel": "Cancelar",
@@ -69,23 +273,71 @@
   "@refreshPreview": {
     "description": "Vuelve a consultar la URL. Nunca toca categorías, estado ni notas."
   },
-
   "settingsAppearance": "Apariencia",
   "themeSystem": "Sistema",
   "themeLight": "Claro",
   "themeDark": "Oscuro",
-
   "settingsData": "Datos",
   "exportLibrary": "Exportar biblioteca",
   "importLibrary": "Importar biblioteca",
   "importMerge": "Combinar",
   "importReplace": "Reemplazar",
-
   "previewUnavailableTitle": "Vista previa no disponible",
   "previewUnavailableBody": "Guardamos tu enlace, pero no pudimos recuperar su vista previa.",
   "tryAgain": "Reintentar",
-
   "inboxEmptyTitle": "Tu bandeja está vacía",
   "inboxEmptyBody": "Comparte un enlace desde Instagram, X, Threads, Pinterest o cualquier sitio web y aparecerá aquí.",
-  "addFirstLink": "Añadir tu primer enlace"
+  "addFirstLink": "Añadir tu primer enlace",
+  "shareArrivalCold": "app cerrada",
+  "shareArrivalWarm": "app en segundo plano",
+  "shareMissingUrl": "Sin URL en el texto compartido",
+  "shortLink": "acortado",
+  "devGalleryTitle": "Galería de componentes",
+  "devGalleryThemeTooltip": "Cambiar tema",
+  "devGalleryButtons": "Botones",
+  "devGalleryFields": "Campos de texto",
+  "devGalleryStatuses": "Estados",
+  "devGalleryCategories": "Categorías",
+  "devGalleryCards": "Tarjetas",
+  "devGalleryEmptyStates": "Estados vacíos",
+  "devGalleryOverlays": "Paneles y menús",
+  "devGalleryLoading": "Cargando",
+  "devGallerySecondaryAction": "Acción secundaria",
+  "devGalleryGhostAction": "Acción discreta",
+  "devGalleryDeleteAction": "Eliminar enlace",
+  "devGalleryTitleField": "Título del enlace",
+  "devGalleryTitleHint": "Una lectura para después",
+  "devGalleryNotesField": "Notas opcionales",
+  "devGalleryNotesHint": "Añade contexto para recordar por qué lo guardaste",
+  "devGallerySampleCardTitle": "Diseñar productos que se sienten simples",
+  "devGallerySampleCardBody": "Un ejemplo de tarjeta interactiva con estado, categoría y acciones.",
+  "devGallerySampleDomain": "ejemplo.com",
+  "devGalleryCategoryReadLater": "Leer después",
+  "devGalleryCategoryInspiration": "Inspiración",
+  "devGalleryEmptyTitle": "Todavía no hay enlaces aquí",
+  "devGalleryEmptyBody": "Cuando guardes un enlace aparecerá en este espacio.",
+  "devGalleryOpenSheet": "Abrir panel",
+  "devGallerySheetTitle": "Editar enlace",
+  "devGallerySheetBody": "Los paneles mantienen el contexto y dejan las acciones principales al alcance.",
+  "devGalleryMenuTooltip": "Más acciones",
+  "addLinkTitle": "Guardar en SambaLinks",
+  "@addLinkTitle": {
+    "description": "Título de la hoja para añadir un enlace a mano."
+  },
+  "addLinkField": "URL del enlace",
+  "addLinkHint": "https://…",
+  "addLinkFromClipboard": "Pegar del portapapeles",
+  "addLinkInvalid": "Eso no parece un enlace válido",
+  "addLinkSaved": "Enlace guardado en la Bandeja",
+  "addLinkSaveError": "No pudimos guardar el enlace",
+  "addLinkDuplicateTitle": "Este enlace ya está en SambaLinks",
+  "addLinkDuplicateBody": "Lo guardaste el {date}.",
+  "@addLinkDuplicateBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "addLinkOpenExisting": "Abrir el que ya tienes"
 }

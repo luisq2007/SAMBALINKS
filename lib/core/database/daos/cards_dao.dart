@@ -13,15 +13,28 @@ class CardsDao extends DatabaseAccessor<AppDatabase> with _$CardsDaoMixin {
   CardsDao(super.db);
 
   Future<Card?> findById(String id) {
-    return (select(cards)..where(($CardsTable t) => t.id.equals(id)))
-        .getSingleOrNull();
+    return (select(
+      cards,
+    )..where(($CardsTable t) => t.id.equals(id))).getSingleOrNull();
   }
 
   /// Busca por URL canónica. Es la consulta de detección de duplicados (§27).
   Future<Card?> findByCanonicalUrl(String canonicalUrl) {
-    return (select(
-      cards,
-    )..where(($CardsTable t) => t.canonicalUrl.equals(canonicalUrl))).getSingleOrNull();
+    return (select(cards)
+          ..where(($CardsTable t) => t.canonicalUrl.equals(canonicalUrl)))
+        .getSingleOrNull();
+  }
+
+  Future<Set<String>> getLocalImagePaths() async {
+    final JoinedSelectStatement<HasResultSet, dynamic> statement =
+        selectOnly(cards)
+          ..addColumns(<Expression<Object>>[cards.localImage])
+          ..where(cards.localImage.isNotNull());
+    final List<TypedResult> rows = await statement.get();
+    return <String>{
+      for (final TypedResult row in rows)
+        if (row.read(cards.localImage) case final String path) path,
+    };
   }
 
   Future<void> upsert(CardsCompanion card) =>
@@ -100,18 +113,23 @@ class CardsDao extends DatabaseAccessor<AppDatabase> with _$CardsDaoMixin {
     Expression<bool> predicate = const Constant<bool>(true);
 
     if (f.statuses != null && f.statuses!.isNotEmpty) {
-      predicate = predicate &
+      predicate =
+          predicate &
           t.status.isIn(f.statuses!.map((CardStatus s) => s.value).toList());
     }
     if (f.platforms != null && f.platforms!.isNotEmpty) {
-      predicate = predicate &
-          t.platform.isIn(f.platforms!.map((LinkPlatform p) => p.value).toList());
+      predicate =
+          predicate &
+          t.platform.isIn(
+            f.platforms!.map((LinkPlatform p) => p.value).toList(),
+          );
     }
     if (f.createdAfter != null) {
       predicate = predicate & t.createdAt.isBiggerOrEqualValue(f.createdAfter!);
     }
     if (f.createdBefore != null) {
-      predicate = predicate & t.createdAt.isSmallerOrEqualValue(f.createdBefore!);
+      predicate =
+          predicate & t.createdAt.isSmallerOrEqualValue(f.createdBefore!);
     }
     if (f.hasImage != null) {
       final Expression<bool> withImage =
@@ -126,7 +144,8 @@ class CardsDao extends DatabaseAccessor<AppDatabase> with _$CardsDaoMixin {
 
     // La Bandeja no es una categoría: es la ausencia de relaciones.
     if (f.uncategorized) {
-      predicate = predicate &
+      predicate =
+          predicate &
           notExistsQuery(
             select(cardCategories)
               ..where(($CardCategoriesTable cc) => cc.cardId.equalsExp(t.id)),
@@ -134,21 +153,22 @@ class CardsDao extends DatabaseAccessor<AppDatabase> with _$CardsDaoMixin {
     }
 
     if (f.categoryIds != null && f.categoryIds!.isNotEmpty) {
-      predicate = predicate &
+      predicate =
+          predicate &
           existsQuery(
-            select(cardCategories)
-              ..where(
-                ($CardCategoriesTable cc) =>
-                    cc.cardId.equalsExp(t.id) &
-                    cc.categoryId.isIn(f.categoryIds!.toList()),
-              ),
+            select(cardCategories)..where(
+              ($CardCategoriesTable cc) =>
+                  cc.cardId.equalsExp(t.id) &
+                  cc.categoryId.isIn(f.categoryIds!.toList()),
+            ),
           );
     }
 
     final String? q = f.query?.trim();
     if (q != null && q.isNotEmpty) {
       final String pattern = '%${q.toLowerCase()}%';
-      Expression<bool> matches = t.title.lower().like(pattern) |
+      Expression<bool> matches =
+          t.title.lower().like(pattern) |
           t.description.lower().like(pattern) |
           t.domain.lower().like(pattern) |
           t.url.lower().like(pattern) |
@@ -156,7 +176,8 @@ class CardsDao extends DatabaseAccessor<AppDatabase> with _$CardsDaoMixin {
           t.platform.lower().like(pattern);
 
       // La búsqueda también alcanza el nombre de las categorías (§20).
-      matches = matches |
+      matches =
+          matches |
           existsQuery(
             select(cardCategories).join(<Join<HasResultSet, dynamic>>[
               innerJoin(
@@ -188,12 +209,15 @@ class CardsDao extends DatabaseAccessor<AppDatabase> with _$CardsDaoMixin {
       ],
       CardSort.recentlyUpdated => <OrderClauseGenerator<$CardsTable>>[
         ($CardsTable t) => OrderingTerm.desc(t.updatedAt),
+        ($CardsTable t) => OrderingTerm.desc(t.id),
       ],
       CardSort.titleAsc => <OrderClauseGenerator<$CardsTable>>[
         ($CardsTable t) => OrderingTerm.asc(t.title),
+        ($CardsTable t) => OrderingTerm.asc(t.id),
       ],
       CardSort.titleDesc => <OrderClauseGenerator<$CardsTable>>[
         ($CardsTable t) => OrderingTerm.desc(t.title),
+        ($CardsTable t) => OrderingTerm.desc(t.id),
       ],
       CardSort.platform => <OrderClauseGenerator<$CardsTable>>[
         ($CardsTable t) => OrderingTerm.asc(t.platform),
@@ -202,6 +226,7 @@ class CardsDao extends DatabaseAccessor<AppDatabase> with _$CardsDaoMixin {
       CardSort.status => <OrderClauseGenerator<$CardsTable>>[
         ($CardsTable t) => OrderingTerm.asc(t.status),
         ($CardsTable t) => OrderingTerm.desc(t.createdAt),
+        ($CardsTable t) => OrderingTerm.desc(t.id),
       ],
     };
   }

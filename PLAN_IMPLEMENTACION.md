@@ -564,7 +564,26 @@ Pendiente de esta fase, se hará al empezar la F3: **datos semilla** (3 categor�
 
 ---
 
-#### Fase 5 — Servicio de metadata · 3 d
+#### Fase 5 — Servicio de metadata · 3 d — ✅ COMPLETADA (2026-08-12)
+
+**Verificación:** 24 tests nuevos con fixtures locales; suite completa de 144
+tests en verde y `flutter analyze` sin issues. Cubiertos: OG completo, sólo
+Twitter Cards, sólo `<title>`, muro de login de Instagram, HTML malformado,
+oEmbed prioritario, 301, máximo exacto de 5 redirects, 403, corte en streaming
+de una respuesta de 5 MB a 512 KB, persistencia y limpieza de imágenes, cola
+con máximo 3, resolución de acortadores y segunda detección de duplicado sin
+fusión automática. El test del límite se verificó con una mutación temporal a
+513 KB: falló por aceptar 1 KB de más y volvió a verde al restaurar el contrato.
+
+`flutter build apk --debug` completó y el APK se instaló en el emulador Android.
+`am start -W` agotó su espera aunque el proceso sí arrancó; se comprobó el
+render final mediante captura del dispositivo, con base y categorías semilla
+visibles y sin pantalla de error.
+
+**Decisión de implementación:** `MetadataEnrichmentService` devuelve un
+resultado explícito cuando la URL resuelta ya existe. Actualiza la metadata de
+la tarjeta corta, pero conserva su canónica provisional y no fusiona ni borra
+nada; la confirmación del usuario queda para el diálogo de §27/F12.
 
 **Entregables**
 - `MetadataProvider` + `DirectMetadataProvider` con las 3 estrategias de §8
@@ -582,7 +601,19 @@ Pendiente de esta fase, se hará al empezar la F3: **datos semilla** (3 categor�
 
 ---
 
-#### Fase 6 — Design System · 2.5 d
+#### Fase 6 — Design System · 2.5 d — ✅ COMPLETADA (2026-08-12)
+
+**Verificación:** 8 tests específicos de la galería y sus componentes, suite
+completa de 152 tests en verde, `flutter analyze` sin issues y
+`git diff --check` limpio. Se validaron 390×844 y 1440×900 en tests de widget,
+claro y oscuro en emulador Android, y una compilación/ejecución nativa macOS.
+La suite detectó durante el desarrollo desbordes reales en `EmptyState` y
+`SambaButton`; ambos casos se corrigieron antes de cerrar la fase.
+
+**Decisión de implementación:** la tipografía usa la familia sans-serif del
+sistema para no introducir una descarga ni una dependencia de fuentes. Todos
+los colores semánticos, incluida la variante destructiva, se resuelven desde
+tokens; el parser hexadecimal de categorías también quedó centralizado allí.
 
 **Entregables**
 - `tokens.dart` con la paleta de §9 y todos los tokens
@@ -594,7 +625,20 @@ Pendiente de esta fase, se hará al empezar la F3: **datos semilla** (3 categor�
 
 ---
 
-#### Fase 7 — Shell responsive y navegación · 2 d
+#### Fase 7 — Shell responsive y navegación · 2 d — ✅ COMPLETADA (2026-08-12)
+
+**Verificación:** 6 pruebas específicas recorren los límites exactos de 600,
+1024 y 1400 px, la navegación persistente, el sidebar colapsable, los
+contadores reactivos, la tercera columna y el redimensionado continuo de 400 a
+1600 px. Suite completa: 158 tests en verde; `flutter analyze` y
+`git diff --check` limpios. Se compiló para Android y macOS, y se validó en el
+emulador el cambio real de navegación inferior a `NavigationRail` al rotar.
+
+La prueba de paisaje detectó inicialmente un overflow de 100 px en el estado
+vacío; se convirtió en contenido desplazable con altura mínima adaptativa y la
+misma prueba confirmó la corrección. El spike de compartir se conserva como la
+rama Inicio, de modo que cambiar de sección o de tamaño no descarta enlaces
+recién recibidos antes de que F12 lo sustituya por Quick Save.
 
 **Entregables**
 - `go_router` con `StatefulShellRoute` (el shell no se reconstruye al cambiar de sección)
@@ -608,7 +652,27 @@ Pendiente de esta fase, se hará al empezar la F3: **datos semilla** (3 categor�
 
 ---
 
-#### Fase 8 — Vista Lista · 4 d
+#### Fase 8 — Vista Lista · 4 d — ✅ COMPLETADA (2026-08-12)
+
+**Verificación:** 16 pruebas nuevas; suite completa de 174 tests en verde.
+La consulta carga lotes de 40 con offsets estables, y una base en memoria con
+2.000 cards cumple el límite de búsqueda de 150 ms. Los filtros combinados se
+compararon contra una consulta SQL independiente y devolvieron exactamente los
+mismos ids. Cubiertos además: debounce exacto de 250 ms, siete órdenes con
+persistencia en `settings`, tres densidades sin overflow, rotación, estados
+vacíos diferenciados y conservación del enlace entrante al navegar.
+
+Se compiló y revisó en Android y macOS. La revisión Android encontró dos fallos
+que el primer fixture vacío no mostraba: un overflow de 100 px al añadir las
+categorías semilla al panel y el FAB superpuesto al modal por usar el navegador
+de la rama. `SambaSheet` ahora asigna flexiblemente la altura restante y abre
+en el navegador raíz; se repitió la captura real sin overflow ni superposición.
+macOS ya no intenta usar el canal inexistente de `receive_sharing_intent` y
+arranca directamente en la biblioteca sin excepción.
+
+**P1:** queda montado el modo de selección múltiple por pulsación larga, con
+estado persistente dentro de la rama y cancelación. Las mutaciones en lote se
+mantienen como mejora P1, tal como las marca el plan, y no bloquean el MVP.
 
 **Entregables**
 - `LinkCard` en tres densidades (móvil, escritorio, compacta)
@@ -624,7 +688,23 @@ Pendiente de esta fase, se hará al empezar la F3: **datos semilla** (3 categor�
 
 ---
 
-#### Fase 9 — Detalle de card y acciones · 2.5 d
+#### Fase 9 — Detalle de card y acciones · 2.5 d — ✅ COMPLETADA (2026-08-12)
+
+**Verificación:** 6 pruebas nuevas cubren la apertura móvil y el panel lateral
+ancho, el debounce exacto de 800 ms, las 11 acciones, el mensaje recuperable
+de metadata, la preservación de notas/estado/categorías/`createdAt` al refrescar
+y el borrado con `undo`. Suite completa: 180 tests en verde; `flutter analyze`
+y `git diff --check` limpios. Android, iOS Simulator y macOS compilan con los
+plugins nativos. En el emulador Android se comprobó además que “Abrir original”
+entrega la URL a Chrome y que el sheet se expande sin overflow. La revisión
+visual detectó una etiqueta flotante recortada en el primer campo; se corrigió
+y se repitió la captura antes de cerrar la fase.
+
+**Decisión de implementación:** el detalle seleccionado vive en un provider
+independiente de la ruta para que sobreviva al cambio entre breakpoints. Hasta
+1400 px se abre como `DraggableScrollableSheet`; desde 1401 px ocupa la tercera
+columna ya reservada por el shell. Un borrado captura primero las categorías y
+el `undo` restaura tanto la tarjeta como sus relaciones.
 
 **Entregables**
 - Escritorio: panel lateral derecho (§24). Móvil: bottom sheet expandible a pantalla completa
@@ -635,6 +715,37 @@ Pendiente de esta fase, se hará al empezar la F3: **datos semilla** (3 categor�
 - Borrado con `undo`
 
 **Verificación:** test de widget que confirma que tras "Actualizar vista previa" las notas, el estado, las categorías y `createdAt` permanecen idénticos. `url_launcher` abre el original en iOS, Android y macOS.
+
+---
+
+#### Fase 9.5 — Guardado manual de enlaces (adelantado de la F12) · 0.5 d — ✅ COMPLETADA (2026-08-13)
+
+**Por qué se adelantó.** Al verificar el estado tras la F9 apareció un agujero:
+**no había ninguna forma de meter un enlace en la aplicación desde la UI.** El
+FAB sólo cambiaba de pestaña y los dos estados vacíos enviaban al usuario a
+`/dev/share`, la pantalla de depuración de la F1A. Consecuencia práctica: las
+Fases 8 y 9 —6,5 días de plan— nunca se habían podido ejercitar con datos
+reales en un dispositivo; sólo con dobles en tests de widget.
+
+Es la viñeta "Añadir URL manualmente" de la F12, traída aquí porque desbloquea
+la verificación de todo lo anterior.
+
+**Entregables**
+- `AddLinkSheet`: hoja con un único campo obligatorio, la URL
+- Normaliza con la F4, comprueba duplicado (§27) y ofrece abrir el existente
+- Guarda en Pendiente y sin categoría, es decir, en la Bandeja
+- Dispara el enriquecimiento de metadata **sin bloquear el guardado**
+- FAB y estados vacíos reconectados; ninguna ruta de usuario apunta ya a `/dev/`
+
+**Desviación del PRD:** el portapapeles **no** se lee al abrir la hoja, sino con
+un botón explícito "Pegar del portapapeles". Android 12+ muestra un aviso del
+sistema cada vez que una app lee el portapapeles; aparecer como una app que
+fisgonea al abrirse contradice "Privacy First" por ahorrar un toque. Hay un test
+que falla si alguien reintroduce la lectura automática.
+
+**Verificación:** 6 tests nuevos, 186 en total. Comprobado en emulador: guardar
+`https://www.instagram.com/usuario/p/ABC123/?igshid=xyz` desde cero crea la
+tarjeta canonicalizada, en Pendiente, y la lista pasa de 0 a 1.
 
 ---
 

@@ -12,7 +12,8 @@ part 'settings_dao.g.dart';
 /// Vive en la base de datos y no en `shared_preferences` porque el JSON
 /// portable (§29 del PRD) debe llevarse los ajustes junto con los datos.
 @DriftAccessor(tables: <Type>[AppSettings])
-class SettingsDao extends DatabaseAccessor<AppDatabase> with _$SettingsDaoMixin {
+class SettingsDao extends DatabaseAccessor<AppDatabase>
+    with _$SettingsDaoMixin {
   SettingsDao(super.db);
 
   Future<T?> read<T>(String key) async {
@@ -28,7 +29,8 @@ class SettingsDao extends DatabaseAccessor<AppDatabase> with _$SettingsDaoMixin 
   }
 
   Stream<T?> watch<T>(String key) {
-    return (select(appSettings)..where(($AppSettingsTable t) => t.key.equals(key)))
+    return (select(appSettings)
+          ..where(($AppSettingsTable t) => t.key.equals(key)))
         .watchSingleOrNull()
         .map((AppSetting? row) {
           if (row == null) {
@@ -52,8 +54,9 @@ class SettingsDao extends DatabaseAccessor<AppDatabase> with _$SettingsDaoMixin 
     };
   }
 
-  Future<int> remove(String key) =>
-      (delete(appSettings)..where(($AppSettingsTable t) => t.key.equals(key))).go();
+  Future<int> remove(String key) => (delete(
+    appSettings,
+  )..where(($AppSettingsTable t) => t.key.equals(key))).go();
 }
 
 /// Claves de ajustes conocidas. Centralizadas para que el exportador y el

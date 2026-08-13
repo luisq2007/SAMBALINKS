@@ -23,17 +23,32 @@ class ShareReceiver {
   /// Llama a `reset()` después de leerlo: sin eso el sistema devuelve el mismo
   /// contenido en el siguiente arranque y se duplica el enlace.
   Future<List<IncomingShare>> initialShares() async {
-    final List<SharedMediaFile> media = await _intent.getInitialMedia();
-    final List<IncomingShare> shares = _toShares(media, ShareArrival.cold);
-    await _intent.reset();
-    return shares;
+    try {
+      final List<SharedMediaFile> media = await _intent.getInitialMedia();
+      final List<IncomingShare> shares = _toShares(media, ShareArrival.cold);
+      await _intent.reset();
+      return shares;
+    } on Object {
+      // El plugin no registra implementación en macOS. La captura de
+      // escritorio llega por portapapeles/drag & drop en F15, así que aquí la
+      // ausencia del canal es una capacidad no disponible, no un crash.
+      return const <IncomingShare>[];
+    }
   }
 
   /// Contenido que llega mientras la app está viva.
   Stream<List<IncomingShare>> shareStream() {
-    return _intent.getMediaStream().map(
-      (List<SharedMediaFile> media) => _toShares(media, ShareArrival.warm),
-    );
+    try {
+      return _intent
+          .getMediaStream()
+          .map(
+            (List<SharedMediaFile> media) =>
+                _toShares(media, ShareArrival.warm),
+          )
+          .handleError((Object _) {});
+    } on Object {
+      return const Stream<List<IncomingShare>>.empty();
+    }
   }
 
   List<IncomingShare> _toShares(

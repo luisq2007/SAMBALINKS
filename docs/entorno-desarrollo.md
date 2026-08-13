@@ -118,3 +118,23 @@ adb shell "am start -a android.intent.action.SEND -t text/plain --es android.int
 
 El entrecomillado importa: sin las comillas simples internas, el shell del
 dispositivo parte el texto por los espacios y el intent no resuelve.
+
+### `adb` no está en el `PATH` de las sesiones no interactivas
+
+El SDK está instalado y Flutter detecta los dispositivos, pero invocar `adb`
+por nombre desde esta sesión devuelve `command not found`. La ruta verificada
+es:
+
+```bash
+/Users/luisquintero/Library/Android/sdk/platform-tools/adb
+```
+
+Usar esa ruta absoluta en los comandos de verificación. Si hay más de un
+dispositivo conectado, pasar `-s emulator-5554` inmediatamente después de
+`adb`.
+
+En la verificación de F5, `am start -W` devolvió `Status: timeout` tras 13 s,
+pero no fue un fallo de Flutter: `pidof app.sambadesk.links` devolvió un proceso
+activo y una captura con `screencap` mostró la interfaz ya renderizada. Cuando
+ocurra, no contar el timeout como éxito ni como crash sin comprobar proceso y
+pantalla.

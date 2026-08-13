@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sambalinks/core/database/app_database.dart';
 import 'package:sambalinks/core/database/daos/categories_dao.dart';
@@ -108,25 +109,23 @@ void main() {
     });
 
     test('con y sin imagen', () async {
-      expect(
-        await ids(filter: const CardFilter(hasImage: true)),
-        <String>['ig-pendiente'],
-      );
-      expect(
-        await ids(filter: const CardFilter(hasImage: false)),
-        <String>['ig-atendido', 'yt-activo'],
-      );
+      expect(await ids(filter: const CardFilter(hasImage: true)), <String>[
+        'ig-pendiente',
+      ]);
+      expect(await ids(filter: const CardFilter(hasImage: false)), <String>[
+        'ig-atendido',
+        'yt-activo',
+      ]);
     });
 
     test('con y sin notas', () async {
-      expect(
-        await ids(filter: const CardFilter(hasNotes: true)),
-        <String>['yt-activo'],
-      );
-      expect(
-        await ids(filter: const CardFilter(hasNotes: false)),
-        <String>['ig-atendido', 'ig-pendiente'],
-      );
+      expect(await ids(filter: const CardFilter(hasNotes: true)), <String>[
+        'yt-activo',
+      ]);
+      expect(await ids(filter: const CardFilter(hasNotes: false)), <String>[
+        'ig-atendido',
+        'ig-pendiente',
+      ]);
     });
 
     test('contador respeta el filtro', () async {
@@ -191,10 +190,9 @@ void main() {
     });
 
     test('encuentra por notas', () async {
-      expect(
-        await ids(filter: const CardFilter(query: 'trivali')),
-        <String>['c1'],
-      );
+      expect(await ids(filter: const CardFilter(query: 'trivali')), <String>[
+        'c1',
+      ]);
     });
 
     test('encuentra por dominio', () async {
@@ -210,10 +208,9 @@ void main() {
       );
       await db.cardCategoriesDao.assign(cardId: 'c2', categoryId: 'cat-1');
 
-      expect(
-        await ids(filter: const CardFilter(query: 'marketing')),
-        <String>['c2'],
-      );
+      expect(await ids(filter: const CardFilter(query: 'marketing')), <String>[
+        'c2',
+      ]);
     });
 
     test('sin coincidencias devuelve lista vacía', () async {
@@ -231,10 +228,9 @@ void main() {
         categoryId: 'cat',
       );
 
-      expect(
-        await ids(filter: const CardFilter(uncategorized: true)),
-        <String>['sin-categoria'],
-      );
+      expect(await ids(filter: const CardFilter(uncategorized: true)), <String>[
+        'sin-categoria',
+      ]);
     });
 
     test('un enlace sale de la Bandeja al asignarle categoría', () async {
@@ -300,6 +296,166 @@ void main() {
     test('por plataforma', () async {
       expect(await ids(sort: CardSort.platform), <String>['a', 'b']);
     });
+
+    test('por estado', () async {
+      await db.cardsDao.upsert(
+        buildCard(
+          id: 'c',
+          canonicalUrl: 'https://c.com',
+          title: 'Gamma',
+          status: CardStatus.active,
+          createdAt: DateTime.utc(2026, 8, 3),
+        ),
+      );
+      expect(await ids(sort: CardSort.status), <String>['c', 'a', 'b']);
+    });
+  });
+
+  group('Escala y paginación de la Vista Lista', () {
+    test('2.000 cards responden a búsqueda en menos de 150 ms', () async {
+      await db.batch((Batch batch) {
+        for (int index = 0; index < 2000; index++) {
+          batch.insert(
+            db.cards,
+            buildCard(
+              id: 'scale-${index.toString().padLeft(4, '0')}',
+              canonicalUrl: 'https://scale.example/$index',
+              domain: 'scale.example',
+              title: index == 1742
+                  ? 'Aguja medible del benchmark'
+                  : 'Enlace de escala $index',
+              notes: index.isEven ? 'nota par' : null,
+              status: CardStatus.values[index % CardStatus.values.length],
+              platform: LinkPlatform.values[index % LinkPlatform.values.length],
+              createdAt: DateTime.utc(2026, 1, 1).add(Duration(minutes: index)),
+            ),
+          );
+        }
+      });
+
+      // Calienta el statement para que la medida represente la interacción y
+      // no la inicialización de SQLite en el proceso de test.
+      await db.cardsDao.getCards(
+        filter: const CardFilter(query: 'calentamiento'),
+        limit: 40,
+      );
+      final Stopwatch stopwatch = Stopwatch()..start();
+      final List<Card> result = await db.cardsDao.getCards(
+        filter: const CardFilter(query: 'aguja medible'),
+        limit: 40,
+      );
+      stopwatch.stop();
+
+      expect(result.map((Card card) => card.id), <String>['scale-1742']);
+      expect(
+        stopwatch.elapsedMilliseconds,
+        lessThan(150),
+        reason: 'La búsqueda tardó ${stopwatch.elapsedMilliseconds} ms.',
+      );
+    });
+
+    test('páginas estables no repiten ni omiten ids empatados', () async {
+      final DateTime sameTime = DateTime.utc(2026, 8, 12);
+      await db.batch((Batch batch) {
+        for (int index = 0; index < 100; index++) {
+          batch.insert(
+            db.cards,
+            buildCard(
+              id: 'tie-${index.toString().padLeft(3, '0')}',
+              canonicalUrl: 'https://ties.example/$index',
+              createdAt: sameTime,
+              updatedAt: sameTime,
+              title: 'Mismo título',
+            ),
+          );
+        }
+      });
+
+      final List<Card> allPages = <Card>[];
+      for (int offset = 0; offset < 100; offset += 40) {
+        allPages.addAll(
+          await db.cardsDao.getCards(
+            sort: CardSort.titleAsc,
+            limit: 40,
+            offset: offset,
+          ),
+        );
+      }
+
+      expect(allPages, hasLength(100));
+      expect(allPages.map((Card card) => card.id).toSet(), hasLength(100));
+    });
+
+    test(
+      'filtros combinados coinciden con una consulta SQL de referencia',
+      () async {
+        await db.cardsDao.upsert(
+          buildCard(
+            id: 'match',
+            canonicalUrl: 'https://instagram.com/p/match',
+            domain: 'instagram.com',
+            title: 'Diseño aguja',
+            notes: 'guardar aguja',
+            imageUrl: 'https://cdn.example/match.jpg',
+            status: CardStatus.active,
+            platform: LinkPlatform.instagram,
+          ),
+        );
+        await db.cardsDao.upsert(
+          buildCard(
+            id: 'wrong-status',
+            canonicalUrl: 'https://instagram.com/p/status',
+            title: 'Diseño aguja',
+            notes: 'guardar aguja',
+            imageUrl: 'https://cdn.example/status.jpg',
+            status: CardStatus.pending,
+            platform: LinkPlatform.instagram,
+          ),
+        );
+        await db.cardsDao.upsert(
+          buildCard(
+            id: 'wrong-notes',
+            canonicalUrl: 'https://instagram.com/p/notes',
+            title: 'Diseño aguja',
+            imageUrl: 'https://cdn.example/notes.jpg',
+            status: CardStatus.active,
+            platform: LinkPlatform.instagram,
+          ),
+        );
+
+        const CardFilter filter = CardFilter(
+          statuses: <CardStatus>{CardStatus.active},
+          platforms: <LinkPlatform>{LinkPlatform.instagram},
+          hasImage: true,
+          hasNotes: true,
+          query: 'aguja',
+        );
+        final Set<String> actual = (await db.cardsDao.getCards(
+          filter: filter,
+        )).map((Card card) => card.id).toSet();
+        final List<QueryRow> referenceRows = await db.customSelect('''
+        SELECT id FROM cards
+        WHERE status = 'active'
+          AND platform = 'instagram'
+          AND (image_url IS NOT NULL OR local_image IS NOT NULL)
+          AND notes IS NOT NULL AND trim(notes) <> ''
+          AND (
+            lower(title) LIKE '%aguja%'
+            OR lower(description) LIKE '%aguja%'
+            OR lower(domain) LIKE '%aguja%'
+            OR lower(url) LIKE '%aguja%'
+            OR lower(notes) LIKE '%aguja%'
+            OR lower(platform) LIKE '%aguja%'
+          )
+        ''').get();
+        final Set<String> reference = <String>{
+          for (final QueryRow row in referenceRows) row.read<String>('id'),
+        };
+
+        expect(actual, reference);
+        expect(actual, <String>{'match'});
+      },
+    );
   });
 
   group('Relación muchos-a-muchos', () {
@@ -330,9 +486,7 @@ void main() {
         // Y al listar filtrando por ambas categorías aparece una sola vez.
         expect(
           await ids(
-            filter: const CardFilter(
-              categoryIds: <String>{'ideas', 'trivali'},
-            ),
+            filter: const CardFilter(categoryIds: <String>{'ideas', 'trivali'}),
           ),
           <String>['card-1'],
         );
@@ -373,9 +527,12 @@ void main() {
           .watchAllWithCounts()
           .first;
 
-      expect(<String, int>{
-        for (final CategoryWithCount c in counts) c.category.id: c.count,
-      }, <String, int>{'con': 1, 'sin': 0});
+      expect(
+        <String, int>{
+          for (final CategoryWithCount c in counts) c.category.id: c.count,
+        },
+        <String, int>{'con': 1, 'sin': 0},
+      );
     });
   });
 

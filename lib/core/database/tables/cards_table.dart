@@ -34,11 +34,13 @@ class Cards extends Table {
   TextColumn get faviconUrl => text().nullable()();
   TextColumn get siteName => text().nullable()();
 
-  TextColumn get platform =>
-      text().map(const LinkPlatformConverter()).withDefault(const Constant('other'))();
+  TextColumn get platform => text()
+      .map(const LinkPlatformConverter())
+      .withDefault(const Constant('other'))();
 
-  TextColumn get status =>
-      text().map(const CardStatusConverter()).withDefault(const Constant('pending'))();
+  TextColumn get status => text()
+      .map(const CardStatusConverter())
+      .withDefault(const Constant('pending'))();
 
   TextColumn get notes => text().nullable()();
 

@@ -44,4 +44,12 @@ class CardFilter {
 }
 
 /// Criterios de ordenación (§18 del PRD).
-enum CardSort { newest, oldest, recentlyUpdated, titleAsc, titleDesc, platform, status }
+enum CardSort {
+  newest,
+  oldest,
+  recentlyUpdated,
+  titleAsc,
+  titleDesc,
+  platform,
+  status,
+}

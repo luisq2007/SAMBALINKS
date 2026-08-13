@@ -69,7 +69,8 @@ abstract final class PlatformDetector {
   /// móviles sino acortadores, y confundirlos rompería su resolución.
   static String normalizeHost(String host) {
     String result = host.toLowerCase().trim();
-    if (result.startsWith('vm.tiktok.com') || result.startsWith('vt.tiktok.com')) {
+    if (result.startsWith('vm.tiktok.com') ||
+        result.startsWith('vt.tiktok.com')) {
       return result;
     }
     for (final String prefix in <String>['www.', 'm.', 'mobile.', 'web.']) {

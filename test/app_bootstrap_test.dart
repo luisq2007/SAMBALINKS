@@ -9,6 +9,7 @@ import 'package:sambalinks/core/l10n/app_localizations.dart';
 import 'package:sambalinks/core/providers.dart';
 import 'package:sambalinks/core/theme/tokens.dart';
 import 'package:sambalinks/features/categories/domain/category.dart';
+import 'package:sambalinks/features/links/domain/enums.dart';
 
 SharedMediaFile _text(String value) =>
     SharedMediaFile(path: value, type: SharedMediaType.text);
@@ -35,11 +36,27 @@ Future<void> _pumpApp(
     ProviderScope(
       overrides: [
         seedProvider.overrideWith((Ref ref) async {}),
+        orphanImageCleanupProvider.overrideWith((Ref ref) async {}),
         categoriesProvider.overrideWith(
           (Ref ref) => Stream<List<Category>>.value(categories),
         ),
+        categorySummariesProvider.overrideWith(
+          (Ref ref) => Stream<List<CategorySummary>>.value(<CategorySummary>[
+            for (final Category category in categories)
+              CategorySummary(category: category, linkCount: 0),
+          ]),
+        ),
+        statusCountsProvider.overrideWith(
+          (Ref ref) =>
+              Stream<Map<CardStatus, int>>.value(const <CardStatus, int>{
+                CardStatus.pending: 0,
+                CardStatus.active: 0,
+                CardStatus.done: 0,
+              }),
+        ),
+        inboxCountProvider.overrideWith((Ref ref) => Stream<int>.value(0)),
       ],
-      child: const SambaLinksApp(),
+      child: const SambaLinksApp(initialRoute: '/dev/share'),
     ),
   );
   await tester.pump();

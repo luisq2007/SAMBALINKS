@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,62 +5,44 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme/tokens.dart';
 import '../../categories/domain/category.dart';
-import '../data/share_receiver.dart';
 import '../domain/incoming_share.dart';
+import 'incoming_shares_provider.dart';
 
 /// Pantalla del spike de la Fase 1A.
 ///
 /// No es UI de producto: su único trabajo es demostrar que un enlace
 /// compartido desde otra aplicación llega hasta aquí, en frío y en caliente.
 /// Se sustituye por Quick Save en la Fase 12.
-class ShareSpikeScreen extends ConsumerStatefulWidget {
-  const ShareSpikeScreen({required this.onToggleTheme, super.key});
+class ShareSpikeScreen extends ConsumerWidget {
+  const ShareSpikeScreen({this.onToggleTheme, this.embedded = false, super.key})
+    : assert(embedded || onToggleTheme != null);
 
-  final VoidCallback onToggleTheme;
-
-  @override
-  ConsumerState<ShareSpikeScreen> createState() => _ShareSpikeScreenState();
-}
-
-class _ShareSpikeScreenState extends ConsumerState<ShareSpikeScreen> {
-  final ShareReceiver _receiver = ShareReceiver();
-  final List<IncomingShare> _shares = <IncomingShare>[];
-  StreamSubscription<List<IncomingShare>>? _subscription;
+  final VoidCallback? onToggleTheme;
+  final bool embedded;
 
   @override
-  void initState() {
-    super.initState();
-    _subscription = _receiver.shareStream().listen(_add);
-    unawaited(_loadInitial());
-  }
-
-  Future<void> _loadInitial() async {
-    final List<IncomingShare> initial = await _receiver.initialShares();
-    if (mounted) {
-      _add(initial);
-    }
-  }
-
-  void _add(List<IncomingShare> incoming) {
-    if (incoming.isEmpty) {
-      return;
-    }
-    setState(() => _shares.insertAll(0, incoming));
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final L10n l10n = L10n.of(context);
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final List<IncomingShare> shares = ref.watch(incomingSharesProvider);
 
     // Crea las categorías de ejemplo la primera vez.
     ref.watch(seedProvider);
+    ref.watch(orphanImageCleanupProvider);
+
+    final Widget body = shares.isEmpty
+        ? const _EmptyState()
+        : ListView.separated(
+            padding: const EdgeInsets.all(Spacing.lg),
+            itemCount: shares.length,
+            separatorBuilder: (_, _) => const SizedBox(height: Spacing.md),
+            itemBuilder: (BuildContext context, int index) =>
+                _ShareTile(share: shares[index]),
+          );
+
+    if (embedded) {
+      return body;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -75,21 +55,13 @@ class _ShareSpikeScreenState extends ConsumerState<ShareSpikeScreen> {
         ),
         actions: <Widget>[
           IconButton(
-            onPressed: widget.onToggleTheme,
+            onPressed: onToggleTheme,
             icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
             tooltip: isDark ? l10n.themeLight : l10n.themeDark,
           ),
         ],
       ),
-      body: _shares.isEmpty
-          ? const _EmptyState()
-          : ListView.separated(
-              padding: const EdgeInsets.all(Spacing.lg),
-              itemCount: _shares.length,
-              separatorBuilder: (_, _) => const SizedBox(height: Spacing.md),
-              itemBuilder: (BuildContext context, int index) =>
-                  _ShareTile(share: _shares[index]),
-            ),
+      body: body,
     );
   }
 }
@@ -102,32 +74,42 @@ class _EmptyState extends StatelessWidget {
     final L10n l10n = L10n.of(context);
     final ColorScheme colors = Theme.of(context).colorScheme;
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(Spacing.xxl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Image.asset('assets/brand/logo.png', width: 96, height: 96),
-            const SizedBox(height: Spacing.xl),
-            Text(
-              l10n.inboxEmptyTitle,
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final double availableHeight = constraints.maxHeight > Spacing.xxl * 2
+            ? constraints.maxHeight - Spacing.xxl * 2
+            : 0;
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(Spacing.xxl),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: availableHeight),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Image.asset('assets/brand/logo.png', width: 96, height: 96),
+                  const SizedBox(height: Spacing.xl),
+                  Text(
+                    l10n.inboxEmptyTitle,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: Spacing.sm),
+                  Text(
+                    l10n.inboxEmptyBody,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: Spacing.xxl),
+                  const _StatusLegend(),
+                ],
+              ),
             ),
-            const SizedBox(height: Spacing.sm),
-            Text(
-              l10n.inboxEmptyBody,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: Spacing.xxl),
-            const _StatusLegend(),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -217,7 +199,8 @@ class _CategoryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final Color background = _parseHex(category.color) ?? theme.colorScheme.surface;
+    final Color background =
+        SambaPalette.tryParseHex(category.color) ?? theme.colorScheme.surface;
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -237,22 +220,10 @@ class _CategoryChip extends StatelessWidget {
       ),
     );
   }
-
-  static Color? _parseHex(String? hex) {
-    if (hex == null || !hex.startsWith('#') || hex.length != 7) {
-      return null;
-    }
-    final int? value = int.tryParse(hex.substring(1), radix: 16);
-    return value == null ? null : Color(0xFF000000 | value);
-  }
 }
 
 class _StatusChip extends StatelessWidget {
-  const _StatusChip({
-    required this.label,
-    required this.fg,
-    required this.bg,
-  });
+  const _StatusChip({required this.label, required this.fg, required this.bg});
 
   final String label;
   final Color fg;
@@ -276,9 +247,7 @@ class _StatusChip extends StatelessWidget {
           const SizedBox(width: Spacing.sm),
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.labelLarge?.copyWith(color: fg),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: fg),
           ),
         ],
       ),
@@ -316,8 +285,8 @@ class _ShareTile extends StatelessWidget {
                   ),
                   child: Text(
                     share.arrival == ShareArrival.cold
-                        ? 'app cerrada'
-                        : 'app en segundo plano',
+                        ? L10n.of(context).shareArrivalCold
+                        : L10n.of(context).shareArrivalWarm,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: samba.activeFg,
                     ),
@@ -338,7 +307,7 @@ class _ShareTile extends StatelessWidget {
             SelectableText(
               share.normalized?.canonical ??
                   share.url ??
-                  'Sin URL en el texto compartido',
+                  L10n.of(context).shareMissingUrl,
               style: theme.textTheme.titleSmall?.copyWith(
                 color: share.hasUrl ? colors.primary : samba.pendingFg,
               ),
@@ -362,7 +331,7 @@ class _ShareTile extends StatelessWidget {
                   ),
                   if (share.needsNetworkResolution)
                     Text(
-                      '  ·  acortado',
+                      '  ·  ${L10n.of(context).shortLink}',
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: samba.pendingFg,
                       ),

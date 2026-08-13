@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'tokens.dart';
+import 'typography.dart';
 
 /// Temas claro y oscuro de SambaLinks.
 ///
@@ -44,9 +45,12 @@ abstract final class AppTheme {
     required SambaColors extension,
   }) {
     final ThemeData base = ThemeData(colorScheme: scheme, useMaterial3: true);
+    final TextTheme textTheme = SambaTypography.build(scheme.onSurface);
 
     return base.copyWith(
       scaffoldBackgroundColor: scaffoldBackground,
+      textTheme: textTheme,
+      primaryTextTheme: textTheme,
       extensions: <ThemeExtension<dynamic>>[extension],
       appBarTheme: AppBarTheme(
         backgroundColor: scaffoldBackground,
@@ -64,6 +68,61 @@ abstract final class AppTheme {
         ),
       ),
       dividerTheme: DividerThemeData(color: scheme.outline, space: 1),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: scheme.surface,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: Spacing.lg,
+          vertical: Spacing.md,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Radii.card),
+          borderSide: BorderSide(color: scheme.outline),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Radii.card),
+          borderSide: BorderSide(color: scheme.outline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Radii.card),
+          borderSide: BorderSide(color: scheme.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Radii.card),
+          borderSide: BorderSide(color: scheme.error),
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: scheme.surface,
+        modalBackgroundColor: scheme.surface,
+        showDragHandle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(Radii.sheet),
+          ),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: scheme.surface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Radii.card),
+          side: BorderSide(color: scheme.outline),
+        ),
+        textStyle: textTheme.bodyMedium,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: extension.surfaceElevated,
+        contentTextStyle: textTheme.bodyMedium?.copyWith(
+          color: scheme.onSurface,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Radii.card),
+        ),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: scheme.primary),
+      visualDensity: VisualDensity.standard,
     );
   }
 }

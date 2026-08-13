@@ -9,9 +9,12 @@ import '../domain/link_repository.dart';
 import 'link_card_mapper.dart';
 
 class DriftLinkRepository implements LinkRepository {
-  DriftLinkRepository(this._db, {Uuid uuid = const Uuid(), DateTime Function()? now})
-    : _uuid = uuid,
-      _now = now ?? (() => DateTime.now().toUtc());
+  DriftLinkRepository(
+    this._db, {
+    Uuid uuid = const Uuid(),
+    DateTime Function()? now,
+  }) : _uuid = uuid,
+       _now = now ?? (() => DateTime.now().toUtc());
 
   final db.AppDatabase _db;
   final Uuid _uuid;
@@ -51,6 +54,9 @@ class DriftLinkRepository implements LinkRepository {
   @override
   Future<LinkCard?> findByCanonicalUrl(String canonicalUrl) async =>
       (await _db.cardsDao.findByCanonicalUrl(canonicalUrl))?.toDomain();
+
+  @override
+  Future<Set<String>> getLocalImagePaths() => _db.cardsDao.getLocalImagePaths();
 
   @override
   Future<Result<LinkCard>> create(LinkCard card) async {

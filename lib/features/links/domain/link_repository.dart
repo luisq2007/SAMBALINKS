@@ -26,6 +26,9 @@ abstract interface class LinkRepository {
   /// Busca por URL ya normalizada. Base de la detección de duplicados.
   Future<LinkCard?> findByCanonicalUrl(String canonicalUrl);
 
+  /// Rutas relativas de imágenes que todavía pertenecen a una tarjeta.
+  Future<Set<String>> getLocalImagePaths();
+
   /// Guarda un enlace nuevo.
   ///
   /// Devuelve [DuplicateLinkFailure] si su URL canónica ya existe, en lugar de

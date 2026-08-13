@@ -40,5 +40,6 @@ class IncomingShare {
   LinkPlatform get platform => normalized?.platform ?? LinkPlatform.other;
 
   /// La canónica de ahora es provisional porque el enlace es un acortador.
-  bool get needsNetworkResolution => normalized?.needsNetworkResolution ?? false;
+  bool get needsNetworkResolution =>
+      normalized?.needsNetworkResolution ?? false;
 }
