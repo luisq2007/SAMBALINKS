@@ -20,6 +20,11 @@ class DuplicateCategoryFailure extends AppFailure {
   final String existingCategoryId;
 }
 
+/// El texto no contiene una URL utilizable.
+class InvalidUrlFailure extends AppFailure {
+  const InvalidUrlFailure();
+}
+
 /// Entrada del usuario que no supera la validación.
 class ValidationFailure extends AppFailure {
   const ValidationFailure(this.message);

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/providers.dart';
@@ -13,9 +12,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../shared/widgets/widgets.dart'
     show SambaButton, SambaButtonVariant, SambaTextField;
 import '../domain/link_card.dart';
-import '../domain/link_repository.dart';
 import '../domain/url_extractor.dart';
-import '../domain/url_normalizer.dart';
 
 /// Guardado manual de un enlace.
 ///
@@ -76,45 +73,25 @@ class _AddLinkSheetState extends ConsumerState<AddLinkSheet> {
 
   Future<void> _save() async {
     final L10n l10n = L10n.of(context);
-    final NormalizedUrl? normalized = UrlNormalizer.normalize(_controller.text);
-
-    if (normalized == null) {
-      setState(() => _error = l10n.addLinkInvalid);
-      return;
-    }
-
     setState(() {
       _error = null;
       _saving = true;
     });
 
-    final LinkRepository repository = ref.read(linkRepositoryProvider);
-    final DateTime now = DateTime.now().toUtc();
-    final LinkCard card = LinkCard(
-      id: const Uuid().v7(),
-      url: normalized.original,
-      canonicalUrl: normalized.canonical,
-      domain: normalized.domain,
-      platform: normalized.platform,
-      createdAt: now,
-      updatedAt: now,
-    );
+    // Mismo camino que Quick Save: normalizar, deduplicar, guardar y pedir
+    // metadata sin bloquear. Que ambas rutas compartan esto es lo que evita
+    // que se comporten distinto ante un duplicado.
+    final Result<LinkCard> result = await ref
+        .read(linkSaverProvider)
+        .save(rawUrl: _controller.text);
 
-    final Result<LinkCard> result = await repository.create(card);
     if (!mounted) {
       return;
     }
 
     await result.fold(
       onSuccess: (LinkCard saved) async {
-        // El enlace ya está guardado; la metadata llega después. Capture first:
-        // nunca se bloquea el guardado esperando a la red.
-        unawaited(
-          ref.read(metadataEnrichmentServiceProvider).refreshCard(saved.id),
-        );
-        if (mounted) {
-          Navigator.of(context).pop(saved);
-        }
+        Navigator.of(context).pop(saved);
       },
       onFailure: (AppFailure failure) async {
         if (failure is DuplicateLinkFailure) {
@@ -122,7 +99,9 @@ class _AddLinkSheetState extends ConsumerState<AddLinkSheet> {
         } else {
           setState(() {
             _saving = false;
-            _error = l10n.addLinkSaveError;
+            _error = failure is InvalidUrlFailure
+                ? l10n.addLinkInvalid
+                : l10n.addLinkSaveError;
           });
         }
       },

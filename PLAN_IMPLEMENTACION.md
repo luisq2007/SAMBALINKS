@@ -778,7 +778,23 @@ tarjeta canonicalizada, en Pendiente, y la lista pasa de 0 a 1.
 
 ---
 
-#### Fase 11 — Kanban · 3 d
+#### Fase 11 — Kanban · 3 d — ✅ COMPLETADA (2026-08-13)
+
+**Verificación:** criterios 10-11 de §55 comprobados en emulador. Mover un enlace de Pendiente a Activo lo persiste **tras cerrar y reabrir la app**; `created_at` intacto, `updated_at` cambiado (comprobado en SQL). 198 tests.
+
+**Entregado**
+- Tres columnas con contador por estado, acotadas al ámbito
+- Arrastrar y soltar entre columnas con resaltado del destino válido
+- Auto-desplazamiento al arrastrar cerca de un borde: sin él no se puede soltar en una columna fuera de pantalla, que en móvil es siempre el caso
+- Deshacer en cada movimiento
+- Kanban dentro de una categoría (§22), con conmutador Lista/Kanban
+
+**Decisión: el arrastre no es la vía principal, es la vía bonita.** Cada tarjeta lleva un menú de cambio de estado. Arrastrar con el dedo es incómodo y queda fuera del alcance de un lector de pantalla, así que mover un enlace tiene que ser posible sin gesto. Los tests cubren el menú, no el arrastre, porque es el camino que debe funcionar siempre.
+
+**Ajuste del design system:** `LinkCard` gana `showStatus`. En el tablero la columna ya dice el estado, y repetirlo en cada tarjeta era ruido que además recortaba el título.
+
+**Anotado para la F13:** Drift devuelve las fechas en **hora local**, no en UTC. El mismo instante deja de ser `==` a su original. §12 del plan exige ISO-8601 UTC en el JSON exportado, así que el exportador tendrá que llamar a `.toUtc()` explícitamente.
+
 
 **Entregables**
 - Tres columnas con contadores (§21)
@@ -795,7 +811,33 @@ tarjeta canonicalizada, en Pendiente, y la lista pasa de 0 a 1.
 
 ---
 
-#### Fase 12 — Share to SambaLinks completo · 4 d
+#### Fase 12 — Share to SambaLinks completo · 4 d — ✅ COMPLETADA (2026-08-13)
+
+**Verificación:** criterios 1-6 de §55 completos en emulador. Compartir
+`Mira esto https://www.pinterest.com/pin/987654321/?utm_source=app` y pulsar
+Guardar deja en la base:
+
+| Campo | Valor |
+|---|---|
+| `url` | la original, con su `utm_source` |
+| `canonical_url` | `https://pinterest.com/pin/987654321` |
+| `status` / `notes` / categorías | los elegidos en la hoja |
+| `original_shared_text` | `Mira esto https://…` — el texto íntegro de la app de origen |
+
+208 tests.
+
+**Entregado**
+- `QuickSaveSheet` (§7): vista previa, estado, categorías y nota. **Ningún campo obligatorio**
+- Se abre sola al recibir un compartido, desde cualquier pestaña: el enlace puede llegar mientras se mira el Kanban
+- Detección de duplicados en la propia hoja
+- `LinkSaver`: punto único por el que entra un enlace. Compartir y añadir a mano usan el mismo camino, así que no pueden divergir ante un duplicado
+
+**Decisión: cerrar la hoja sin guardar no descarta el enlace.** Sigue en el aviso de la lista para poder rescatarlo. El PRD es tajante en §10 —"nunca debe perderse un link"— y un descarte accidental es exactamente eso.
+
+**Dos correcciones de diseño que salieron al probarlo en un móvil real:**
+1. Todo el contenido estaba dentro del scroll, así que en pantallas pequeñas **el botón Guardar quedaba fuera de la vista**. Quick Save promete "compartir y guardar en un toque"; eso se rompe si hay que buscar el botón. La barra de acciones ahora es fija.
+2. Sin un techo de altura, la hoja crecía más allá de la pantalla. Limitada al 85%.
+
 
 Aprovecha el spike de F1, ahora con producto real.
 
@@ -815,7 +857,26 @@ Aprovecha el spike de F1, ahora con producto real.
 
 ---
 
-#### Fase 13 — Exportación e importación JSON · 2.5 d
+#### Fase 13 — Exportación e importación JSON · 2.5 d — ✅ COMPLETADA (2026-08-13)
+
+**Verificación:** 16 tests de backup, incluida la ida y vuelta con 200 enlaces, 12 categorías y ~400 relaciones, con notas que llevan acentos, emoji, comillas, barras invertidas y saltos de línea. Comparación campo a campo con precisión de milisegundos. 224 tests en total.
+
+Comprobado además en dispositivo de principio a fin: exportar → hoja de compartir → borrar la app entera → importar desde Descargas → biblioteca restaurada (4 enlaces, 3 categorías, 3 relaciones).
+
+**Dos bugs que sólo aparecieron en el dispositivo**
+
+1. **Los acentos llegaban corruptos al importar.** `Leer después` se convertía en `Leer despuÃ©s`: bytes UTF-8 interpretados como Latin-1 al leer el archivo como texto sin especificar codificación. La ida y vuelta en tests pasaba porque nunca cruza un archivo real. Se añadió `parseBytes`, que decodifica UTF-8 de forma explícita, y un test que viaja por bytes de verdad.
+2. Consecuencia del anterior: las categorías dejaban de fusionarse por nombre y la biblioteca acababa con `Inspiración` e `InspiraciÃ³n` como dos categorías distintas.
+
+**Decisiones**
+- **Las categorías se fusionan por nombre, no por id.** Dos bibliotecas distintas usan ids distintos para "Ideas"; fusionar por id crearía duplicados que el usuario ve.
+- **Al reemplazar un duplicado se conserva el id que ya estaba**, para no romper las relaciones con categorías que el usuario hubiera hecho.
+- **Todo dentro de una transacción.** Una importación a medias es peor que ninguna.
+- `seedCompleted` no viaja: es un detalle de cada dispositivo.
+- Las fechas salen siempre en UTC con `.toUtc()` explícito — el aviso que quedó anotado en la F11.
+
+**Desviación del stack:** `file_picker ^11` no convive con `share_plus ^13` y `pub` bajaba en silencio a la 3.0.4, de 2021. Se usa **`file_selector`**, que además es el paquete oficial del equipo de Flutter.
+
 
 **Entregables**
 - Exportación al formato de §29 (detalle completo en §12 de este plan)

@@ -1,7 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:sambalinks/core/database/app_database.dart';
+import 'package:sambalinks/features/categories/data/drift_category_repository.dart';
+import 'package:sambalinks/features/categories/domain/category_repository.dart';
+import 'package:sambalinks/features/links/data/drift_link_repository.dart';
 import 'package:sambalinks/features/links/domain/enums.dart';
+import 'package:sambalinks/features/links/domain/link_repository.dart';
 import 'package:uuid/uuid.dart';
 
 const Uuid _uuid = Uuid();
@@ -58,4 +62,14 @@ CategoriesCompanion buildCategory({
     createdAt: now,
     updatedAt: now,
   );
+}
+
+/// Repositorios reales sobre una base en memoria, para los tests que quieren
+/// comprobar el comportamiento de verdad y no el de un doble.
+abstract final class DriftHelpers {
+  static LinkRepository linkRepository(AppDatabase db) =>
+      DriftLinkRepository(db);
+
+  static CategoryRepository categoryRepository(AppDatabase db) =>
+      DriftCategoryRepository(db);
 }

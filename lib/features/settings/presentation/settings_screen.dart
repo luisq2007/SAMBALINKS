@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/l10n/app_localizations.dart';
-import '../../../shared/widgets/empty_state.dart';
+import '../../../core/theme/tokens.dart';
+import '../../backup/presentation/backup_section.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -9,10 +10,16 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final L10n l10n = L10n.of(context);
-    return EmptyState(
-      icon: Icons.settings_outlined,
-      title: l10n.settingsPlaceholderTitle,
-      body: l10n.settingsPlaceholderBody,
+    return ListView(
+      padding: const EdgeInsets.all(Spacing.lg),
+      children: <Widget>[
+        Text(
+          l10n.navSettings,
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: Spacing.xl),
+        const BackupSection(),
+      ],
     );
   }
 }

@@ -339,5 +339,137 @@
       }
     }
   },
-  "addLinkOpenExisting": "Abrir el que ya tienes"
+  "addLinkOpenExisting": "Abrir el que ya tienes",
+  "kanbanColumnEmpty": "Nada aquí todavía",
+  "kanbanMoved": "Movido a {status}",
+  "@kanbanMoved": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "kanbanMoveTo": "Mover a {status}",
+  "@kanbanMoveTo": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "kanbanMoveAction": "Cambiar estado de {title}",
+  "@kanbanMoveAction": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "kanbanDropHere": "Suelta aquí",
+  "kanbanScopeAll": "Toda la biblioteca",
+  "kanbanLoadError": "No pudimos cargar el tablero",
+  "viewList": "Lista",
+  "@viewList": {
+    "description": "Modo de vista de una categoría, frente a Kanban."
+  },
+  "quickSaveTitle": "Guardar en SambaLinks",
+  "quickSaveStatus": "Estado",
+  "quickSaveCategories": "Categorías",
+  "quickSaveNote": "Nota",
+  "quickSaveNoteHint": "Opcional",
+  "quickSaveSaved": "Guardado en la Bandeja",
+  "quickSaveSavedIn": "Guardado en {category}",
+  "@quickSaveSavedIn": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "quickSaveError": "No pudimos guardar el enlace",
+  "quickSavePending": "Buscando vista previa…",
+  "incomingSave": "Guardar",
+  "exportDescription": "Crea un archivo JSON portable con toda tu biblioteca.",
+  "exportDone": "Biblioteca exportada",
+  "exportError": "No pudimos exportar la biblioteca",
+  "exportImagesNotice": "Las imágenes guardadas en este dispositivo no viajan en el archivo. Al importar se volverán a descargar las que sigan disponibles.",
+  "importDescription": "Restaura o combina otra biblioteca.",
+  "importPick": "Elegir archivo",
+  "importConfirmTitle": "Importar biblioteca",
+  "importSummary": "{cards} enlaces, {categories} categorías.",
+  "@importSummary": {
+    "placeholders": {
+      "cards": {
+        "type": "int"
+      },
+      "categories": {
+        "type": "int"
+      }
+    }
+  },
+  "importModeLabel": "Qué hacer con lo que ya tienes",
+  "importMergeDescription": "Añade lo importado a tu biblioteca.",
+  "importReplaceDescription": "Borra tu biblioteca y deja sólo lo importado.",
+  "importDuplicatesLabel": "Si un enlace ya existe",
+  "importKeepExisting": "Mantener el que ya tengo",
+  "importReplaceWithImported": "Reemplazar con el importado",
+  "importKeepNewest": "Mantener el más reciente",
+  "importReplaceWarning": "Se borrarán {cards} enlaces y {categories} categorías. No se puede deshacer.",
+  "@importReplaceWarning": {
+    "placeholders": {
+      "cards": {
+        "type": "int"
+      },
+      "categories": {
+        "type": "int"
+      }
+    }
+  },
+  "importConfirm": "Importar",
+  "importDone": "{added} añadidos, {updated} actualizados, {skipped} omitidos",
+  "@importDone": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "importErrorMalformed": "Ese archivo no parece una biblioteca de SambaLinks",
+  "importErrorVersion": "Ese archivo viene de una versión más nueva de SambaLinks",
+  "importError": "No pudimos importar la biblioteca",
+  "appearanceDescription": "Elige cómo se ve SambaLinks.",
+  "settingsAbout": "Acerca de",
+  "aboutVersion": "Versión {version}",
+  "@aboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutPrivacy": "Tus enlaces se guardan sólo en este dispositivo. SambaLinks no tiene cuentas ni servidores, y no envía tus datos a ninguna parte. Al buscar la vista previa de un enlace, la petición va directa al sitio de origen.",
+  "dangerZone": "Borrar biblioteca",
+  "clearLibrary": "Borrar todo",
+  "clearLibraryDescription": "Elimina todos tus enlaces y categorías de este dispositivo.",
+  "clearLibraryConfirmTitle": "¿Borrar toda la biblioteca?",
+  "clearLibraryConfirmBody": "Se eliminarán {cards} enlaces y {categories} categorías. No se puede deshacer. Exporta antes si quieres conservarlos.",
+  "@clearLibraryConfirmBody": {
+    "placeholders": {
+      "cards": {
+        "type": "int"
+      },
+      "categories": {
+        "type": "int"
+      }
+    }
+  },
+  "clearLibraryTypeToConfirm": "Escribe BORRAR para confirmar",
+  "clearLibraryKeyword": "BORRAR",
+  "clearLibraryDone": "Biblioteca borrada"
 }

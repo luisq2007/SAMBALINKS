@@ -123,18 +123,33 @@ void main() {
     expect(find.byType(FloatingActionButton), findsOneWidget);
     expect(
       find.text('https://instagram.com/p/estado-persistente'),
-      findsOneWidget,
+      // Desde la F12 aparece dos veces: en el aviso de la lista y en la hoja
+      // de Quick Save, que se abre sola al recibir un compartido.
+      findsWidgets,
     );
+
+    // Quick Save es modal y tapa la navegación a propósito: acabas de
+    // compartir algo y hay que resolverlo antes de seguir. Se cierra sin
+    // guardar, que es el caso que deja el enlace en el aviso de la lista.
+    // Se cierra tocando el velo, que es lo que hace cualquiera para descartar
+    // una hoja modal. Cerrar sin guardar deja el enlace en el aviso.
+    await tester.tapAt(const Offset(195, 20));
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 60));
+    }
 
     await tester.tap(find.text('Kanban').last);
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('Organiza tu flujo'), findsOneWidget);
 
     await tester.tap(find.text('Inicio').last);
     await tester.pump();
     expect(
       find.text('https://instagram.com/p/estado-persistente'),
-      findsOneWidget,
+      // Desde la F12 aparece dos veces: en el aviso de la lista y en la hoja
+      // de Quick Save, que se abre sola al recibir un compartido.
+      findsWidgets,
     );
     expect(tester.takeException(), isNull);
   });
@@ -228,12 +243,12 @@ void main() {
       size: const Size(400, 800),
       initial: <SharedMediaFile>[_sharedText('https://x.com/samba/status/7')],
     );
-    expect(find.text('https://x.com/samba/status/7'), findsOneWidget);
+    expect(find.text('https://x.com/samba/status/7'), findsWidgets);
 
     for (final double width in <double>[800, 1200, 1600]) {
       tester.view.physicalSize = Size(width, 800);
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.text('https://x.com/samba/status/7'), findsOneWidget);
+      expect(find.text('https://x.com/samba/status/7'), findsWidgets);
       expect(tester.takeException(), isNull);
     }
   });

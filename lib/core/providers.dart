@@ -4,10 +4,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../features/backup/data/library_backup_service.dart';
 import '../features/categories/data/drift_category_repository.dart';
 import '../features/categories/domain/category.dart';
 import '../features/categories/domain/category_repository.dart';
 import '../features/links/data/drift_link_repository.dart';
+import '../features/links/data/link_saver.dart';
 import '../features/links/domain/enums.dart';
 import '../features/links/domain/link_card.dart';
 import '../features/links/domain/link_query.dart';
@@ -86,6 +88,14 @@ final Provider<MetadataProvider> metadataProvider = Provider<MetadataProvider>((
   return QueuedMetadataProvider(direct, maximumConcurrent: 3);
 });
 
+final Provider<LinkSaver> linkSaverProvider = Provider<LinkSaver>(
+  (Ref ref) => LinkSaver(
+    links: ref.watch(linkRepositoryProvider),
+    categories: ref.watch(categoryRepositoryProvider),
+    enrichment: ref.watch(metadataEnrichmentServiceProvider),
+  ),
+);
+
 final Provider<MetadataImageStore> metadataImageStoreProvider =
     Provider<MetadataImageStore>(
       (Ref ref) => LocalMetadataImageStore(ref.watch(safeHttpClientProvider)),
@@ -98,6 +108,11 @@ final Provider<MetadataEnrichmentService> metadataEnrichmentServiceProvider =
         metadata: ref.watch(metadataProvider),
         images: ref.watch(metadataImageStoreProvider),
       ),
+    );
+
+final Provider<LibraryBackupService> libraryBackupServiceProvider =
+    Provider<LibraryBackupService>(
+      (Ref ref) => LibraryBackupService(ref.watch(databaseProvider)),
     );
 
 // --- Consultas de enlaces ---

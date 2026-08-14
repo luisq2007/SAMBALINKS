@@ -10,8 +10,12 @@ import '../../core/routing/routes.dart';
 import '../../core/theme/tokens.dart';
 import '../../features/categories/domain/category.dart';
 import '../../features/links/domain/enums.dart';
+import '../../features/links/domain/link_card.dart';
 import '../../features/links/presentation/add_link_sheet.dart';
 import '../../features/links/presentation/link_detail_pane.dart';
+import '../../features/sharing/domain/incoming_share.dart';
+import '../../features/sharing/presentation/incoming_shares_provider.dart';
+import '../../features/sharing/presentation/quick_save_sheet.dart';
 import 'breakpoints.dart';
 
 class AdaptiveShell extends ConsumerStatefulWidget {
@@ -31,6 +35,34 @@ class AdaptiveShell extends ConsumerStatefulWidget {
 class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
   bool _sidebarExpanded = true;
 
+  /// Contenidos compartidos a los que ya se ofreció Quick Save.
+  ///
+  /// Cerrar la hoja sin guardar **no** descarta el enlace: sigue en el aviso de
+  /// la lista para poder rescatarlo. Sin esta marca la hoja se reabriría sola
+  /// una y otra vez.
+  final Set<IncomingShare> _offered = <IncomingShare>{};
+
+  void _offerQuickSave(List<IncomingShare> incoming) {
+    final IncomingShare? next = incoming
+        .where((IncomingShare share) => !_offered.contains(share))
+        .firstOrNull;
+    if (next == null) {
+      return;
+    }
+    _offered.add(next);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
+        return;
+      }
+      final LinkCard? saved = await QuickSaveSheet.show(context, next);
+      if (saved != null && mounted) {
+        // Guardado: el aviso ya no hace falta.
+        ref.read(incomingSharesProvider.notifier).dismiss(next);
+      }
+    });
+  }
+
   void _select(int index) {
     widget.navigationShell.goBranch(
       index,
@@ -42,6 +74,10 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
   Widget build(BuildContext context) {
     ref.watch(seedProvider);
     ref.watch(orphanImageCleanupProvider);
+
+    // Compartir hacia SambaLinks abre Quick Save sea cual sea la pestaña
+    // activa: el enlace puede llegar mientras se mira el Kanban.
+    _offerQuickSave(ref.watch(incomingSharesProvider));
 
     final L10n l10n = L10n.of(context);
     final SambaWindowClass windowClass = SambaBreakpoints.fromWidth(

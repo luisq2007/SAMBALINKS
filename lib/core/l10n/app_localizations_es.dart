@@ -707,4 +707,182 @@ class L10nEs extends L10n {
 
   @override
   String get addLinkOpenExisting => 'Abrir el que ya tienes';
+
+  @override
+  String get kanbanColumnEmpty => 'Nada aquí todavía';
+
+  @override
+  String kanbanMoved(String status) {
+    return 'Movido a $status';
+  }
+
+  @override
+  String kanbanMoveTo(String status) {
+    return 'Mover a $status';
+  }
+
+  @override
+  String kanbanMoveAction(String title) {
+    return 'Cambiar estado de $title';
+  }
+
+  @override
+  String get kanbanDropHere => 'Suelta aquí';
+
+  @override
+  String get kanbanScopeAll => 'Toda la biblioteca';
+
+  @override
+  String get kanbanLoadError => 'No pudimos cargar el tablero';
+
+  @override
+  String get viewList => 'Lista';
+
+  @override
+  String get quickSaveTitle => 'Guardar en SambaLinks';
+
+  @override
+  String get quickSaveStatus => 'Estado';
+
+  @override
+  String get quickSaveCategories => 'Categorías';
+
+  @override
+  String get quickSaveNote => 'Nota';
+
+  @override
+  String get quickSaveNoteHint => 'Opcional';
+
+  @override
+  String get quickSaveSaved => 'Guardado en la Bandeja';
+
+  @override
+  String quickSaveSavedIn(String category) {
+    return 'Guardado en $category';
+  }
+
+  @override
+  String get quickSaveError => 'No pudimos guardar el enlace';
+
+  @override
+  String get quickSavePending => 'Buscando vista previa…';
+
+  @override
+  String get incomingSave => 'Guardar';
+
+  @override
+  String get exportDescription =>
+      'Crea un archivo JSON portable con toda tu biblioteca.';
+
+  @override
+  String get exportDone => 'Biblioteca exportada';
+
+  @override
+  String get exportError => 'No pudimos exportar la biblioteca';
+
+  @override
+  String get exportImagesNotice =>
+      'Las imágenes guardadas en este dispositivo no viajan en el archivo. Al importar se volverán a descargar las que sigan disponibles.';
+
+  @override
+  String get importDescription => 'Restaura o combina otra biblioteca.';
+
+  @override
+  String get importPick => 'Elegir archivo';
+
+  @override
+  String get importConfirmTitle => 'Importar biblioteca';
+
+  @override
+  String importSummary(int cards, int categories) {
+    return '$cards enlaces, $categories categorías.';
+  }
+
+  @override
+  String get importModeLabel => 'Qué hacer con lo que ya tienes';
+
+  @override
+  String get importMergeDescription => 'Añade lo importado a tu biblioteca.';
+
+  @override
+  String get importReplaceDescription =>
+      'Borra tu biblioteca y deja sólo lo importado.';
+
+  @override
+  String get importDuplicatesLabel => 'Si un enlace ya existe';
+
+  @override
+  String get importKeepExisting => 'Mantener el que ya tengo';
+
+  @override
+  String get importReplaceWithImported => 'Reemplazar con el importado';
+
+  @override
+  String get importKeepNewest => 'Mantener el más reciente';
+
+  @override
+  String importReplaceWarning(int cards, int categories) {
+    return 'Se borrarán $cards enlaces y $categories categorías. No se puede deshacer.';
+  }
+
+  @override
+  String get importConfirm => 'Importar';
+
+  @override
+  String importDone(int added, int updated, int skipped) {
+    return '$added añadidos, $updated actualizados, $skipped omitidos';
+  }
+
+  @override
+  String get importErrorMalformed =>
+      'Ese archivo no parece una biblioteca de SambaLinks';
+
+  @override
+  String get importErrorVersion =>
+      'Ese archivo viene de una versión más nueva de SambaLinks';
+
+  @override
+  String get importError => 'No pudimos importar la biblioteca';
+
+  @override
+  String get appearanceDescription => 'Elige cómo se ve SambaLinks.';
+
+  @override
+  String get settingsAbout => 'Acerca de';
+
+  @override
+  String aboutVersion(String version) {
+    return 'Versión $version';
+  }
+
+  @override
+  String get aboutPrivacy =>
+      'Tus enlaces se guardan sólo en este dispositivo. SambaLinks no tiene cuentas ni servidores, y no envía tus datos a ninguna parte. Al buscar la vista previa de un enlace, la petición va directa al sitio de origen.';
+
+  @override
+  String get dangerZone => 'Borrar biblioteca';
+
+  @override
+  String get clearLibrary => 'Borrar todo';
+
+  @override
+  String get clearLibraryDescription =>
+      'Elimina todos tus enlaces y categorías de este dispositivo.';
+
+  @override
+  String get clearLibraryConfirmTitle => '¿Borrar toda la biblioteca?';
+
+  @override
+  String clearLibraryConfirmBody(int cards, int categories) {
+    return 'Se eliminarán $cards enlaces y $categories categorías. No se puede deshacer. Exporta antes si quieres conservarlos.';
+  }
+
+  @override
+  String get clearLibraryTypeToConfirm => 'Escribe BORRAR para confirmar';
+
+  @override
+  String get clearLibraryKeyword => 'BORRAR';
+
+  @override
+  String get clearLibraryDone => 'Biblioteca borrada';
 }

@@ -1340,6 +1340,312 @@ abstract class L10n {
   /// In es, this message translates to:
   /// **'Abrir el que ya tienes'**
   String get addLinkOpenExisting;
+
+  /// No description provided for @kanbanColumnEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Nada aquí todavía'**
+  String get kanbanColumnEmpty;
+
+  /// No description provided for @kanbanMoved.
+  ///
+  /// In es, this message translates to:
+  /// **'Movido a {status}'**
+  String kanbanMoved(String status);
+
+  /// No description provided for @kanbanMoveTo.
+  ///
+  /// In es, this message translates to:
+  /// **'Mover a {status}'**
+  String kanbanMoveTo(String status);
+
+  /// No description provided for @kanbanMoveAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar estado de {title}'**
+  String kanbanMoveAction(String title);
+
+  /// No description provided for @kanbanDropHere.
+  ///
+  /// In es, this message translates to:
+  /// **'Suelta aquí'**
+  String get kanbanDropHere;
+
+  /// No description provided for @kanbanScopeAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Toda la biblioteca'**
+  String get kanbanScopeAll;
+
+  /// No description provided for @kanbanLoadError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar el tablero'**
+  String get kanbanLoadError;
+
+  /// Modo de vista de una categoría, frente a Kanban.
+  ///
+  /// In es, this message translates to:
+  /// **'Lista'**
+  String get viewList;
+
+  /// No description provided for @quickSaveTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar en SambaLinks'**
+  String get quickSaveTitle;
+
+  /// No description provided for @quickSaveStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado'**
+  String get quickSaveStatus;
+
+  /// No description provided for @quickSaveCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get quickSaveCategories;
+
+  /// No description provided for @quickSaveNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get quickSaveNote;
+
+  /// No description provided for @quickSaveNoteHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Opcional'**
+  String get quickSaveNoteHint;
+
+  /// No description provided for @quickSaveSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardado en la Bandeja'**
+  String get quickSaveSaved;
+
+  /// No description provided for @quickSaveSavedIn.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardado en {category}'**
+  String quickSaveSavedIn(String category);
+
+  /// No description provided for @quickSaveError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos guardar el enlace'**
+  String get quickSaveError;
+
+  /// No description provided for @quickSavePending.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscando vista previa…'**
+  String get quickSavePending;
+
+  /// No description provided for @incomingSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get incomingSave;
+
+  /// No description provided for @exportDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea un archivo JSON portable con toda tu biblioteca.'**
+  String get exportDescription;
+
+  /// No description provided for @exportDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Biblioteca exportada'**
+  String get exportDone;
+
+  /// No description provided for @exportError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos exportar la biblioteca'**
+  String get exportError;
+
+  /// No description provided for @exportImagesNotice.
+  ///
+  /// In es, this message translates to:
+  /// **'Las imágenes guardadas en este dispositivo no viajan en el archivo. Al importar se volverán a descargar las que sigan disponibles.'**
+  String get exportImagesNotice;
+
+  /// No description provided for @importDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaura o combina otra biblioteca.'**
+  String get importDescription;
+
+  /// No description provided for @importPick.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir archivo'**
+  String get importPick;
+
+  /// No description provided for @importConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar biblioteca'**
+  String get importConfirmTitle;
+
+  /// No description provided for @importSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'{cards} enlaces, {categories} categorías.'**
+  String importSummary(int cards, int categories);
+
+  /// No description provided for @importModeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué hacer con lo que ya tienes'**
+  String get importModeLabel;
+
+  /// No description provided for @importMergeDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Añade lo importado a tu biblioteca.'**
+  String get importMergeDescription;
+
+  /// No description provided for @importReplaceDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Borra tu biblioteca y deja sólo lo importado.'**
+  String get importReplaceDescription;
+
+  /// No description provided for @importDuplicatesLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Si un enlace ya existe'**
+  String get importDuplicatesLabel;
+
+  /// No description provided for @importKeepExisting.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantener el que ya tengo'**
+  String get importKeepExisting;
+
+  /// No description provided for @importReplaceWithImported.
+  ///
+  /// In es, this message translates to:
+  /// **'Reemplazar con el importado'**
+  String get importReplaceWithImported;
+
+  /// No description provided for @importKeepNewest.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantener el más reciente'**
+  String get importKeepNewest;
+
+  /// No description provided for @importReplaceWarning.
+  ///
+  /// In es, this message translates to:
+  /// **'Se borrarán {cards} enlaces y {categories} categorías. No se puede deshacer.'**
+  String importReplaceWarning(int cards, int categories);
+
+  /// No description provided for @importConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar'**
+  String get importConfirm;
+
+  /// No description provided for @importDone.
+  ///
+  /// In es, this message translates to:
+  /// **'{added} añadidos, {updated} actualizados, {skipped} omitidos'**
+  String importDone(int added, int updated, int skipped);
+
+  /// No description provided for @importErrorMalformed.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese archivo no parece una biblioteca de SambaLinks'**
+  String get importErrorMalformed;
+
+  /// No description provided for @importErrorVersion.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese archivo viene de una versión más nueva de SambaLinks'**
+  String get importErrorVersion;
+
+  /// No description provided for @importError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos importar la biblioteca'**
+  String get importError;
+
+  /// No description provided for @appearanceDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige cómo se ve SambaLinks.'**
+  String get appearanceDescription;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In es, this message translates to:
+  /// **'Acerca de'**
+  String get settingsAbout;
+
+  /// No description provided for @aboutVersion.
+  ///
+  /// In es, this message translates to:
+  /// **'Versión {version}'**
+  String aboutVersion(String version);
+
+  /// No description provided for @aboutPrivacy.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus enlaces se guardan sólo en este dispositivo. SambaLinks no tiene cuentas ni servidores, y no envía tus datos a ninguna parte. Al buscar la vista previa de un enlace, la petición va directa al sitio de origen.'**
+  String get aboutPrivacy;
+
+  /// No description provided for @dangerZone.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar biblioteca'**
+  String get dangerZone;
+
+  /// No description provided for @clearLibrary.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar todo'**
+  String get clearLibrary;
+
+  /// No description provided for @clearLibraryDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Elimina todos tus enlaces y categorías de este dispositivo.'**
+  String get clearLibraryDescription;
+
+  /// No description provided for @clearLibraryConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Borrar toda la biblioteca?'**
+  String get clearLibraryConfirmTitle;
+
+  /// No description provided for @clearLibraryConfirmBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se eliminarán {cards} enlaces y {categories} categorías. No se puede deshacer. Exporta antes si quieres conservarlos.'**
+  String clearLibraryConfirmBody(int cards, int categories);
+
+  /// No description provided for @clearLibraryTypeToConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe BORRAR para confirmar'**
+  String get clearLibraryTypeToConfirm;
+
+  /// No description provided for @clearLibraryKeyword.
+  ///
+  /// In es, this message translates to:
+  /// **'BORRAR'**
+  String get clearLibraryKeyword;
+
+  /// No description provided for @clearLibraryDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Biblioteca borrada'**
+  String get clearLibraryDone;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

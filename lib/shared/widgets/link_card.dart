@@ -19,6 +19,7 @@ class LinkCard extends StatelessWidget {
     required this.card,
     this.categories = const <Category>[],
     this.density = LinkCardDensity.mobile,
+    this.showStatus = true,
     this.selected = false,
     this.onTap,
     this.onLongPress,
@@ -29,6 +30,11 @@ class LinkCard extends StatelessWidget {
   final domain.LinkCard card;
   final List<Category> categories;
   final LinkCardDensity density;
+
+  /// En el Kanban la columna ya dice el estado, así que repetirlo en cada
+  /// tarjeta es ruido que además come el ancho del título.
+  final bool showStatus;
+
   final bool selected;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -46,6 +52,7 @@ class LinkCard extends StatelessWidget {
         categories: categories,
       ),
       LinkCardDensity.compact => _CompactContent(
+        showStatus: showStatus,
         card: card,
         categories: categories,
       ),
@@ -141,10 +148,15 @@ class _DesktopContent extends StatelessWidget {
 }
 
 class _CompactContent extends StatelessWidget {
-  const _CompactContent({required this.card, required this.categories});
+  const _CompactContent({
+    required this.card,
+    required this.categories,
+    this.showStatus = true,
+  });
 
   final domain.LinkCard card;
   final List<Category> categories;
+  final bool showStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -175,8 +187,10 @@ class _CompactContent extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: Spacing.md),
-        StatusPill(status: card.status),
+        if (showStatus) ...<Widget>[
+          const SizedBox(width: Spacing.md),
+          StatusPill(status: card.status),
+        ],
       ],
     );
   }
