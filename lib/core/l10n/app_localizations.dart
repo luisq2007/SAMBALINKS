@@ -1646,6 +1646,66 @@ abstract class L10n {
   /// In es, this message translates to:
   /// **'Biblioteca borrada'**
   String get clearLibraryDone;
+
+  /// No description provided for @dropHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Suelta el enlace para guardarlo'**
+  String get dropHint;
+
+  /// No description provided for @dropSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 enlace guardado} other{{count} enlaces guardados}}'**
+  String dropSaved(int count);
+
+  /// No description provided for @dropNothingUseful.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahí no había ningún enlace'**
+  String get dropNothingUseful;
+
+  /// No description provided for @shortcutSearch.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar'**
+  String get shortcutSearch;
+
+  /// No description provided for @shortcutAddLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir enlace'**
+  String get shortcutAddLink;
+
+  /// No description provided for @shortcutFilters.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtros'**
+  String get shortcutFilters;
+
+  /// No description provided for @shortcutClose.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar'**
+  String get shortcutClose;
+
+  /// No description provided for @clipboardSuggestionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tienes un enlace copiado'**
+  String get clipboardSuggestionTitle;
+
+  /// No description provided for @clipboardSuggestionSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get clipboardSuggestionSave;
+
+  /// No description provided for @clipboardSuggestionDismiss.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get clipboardSuggestionDismiss;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/tokens.dart';
 
-class SambaCard extends StatelessWidget {
+class SambaCard extends StatefulWidget {
   const SambaCard({
     required this.child,
     this.onTap,
@@ -19,30 +19,45 @@ class SambaCard extends StatelessWidget {
   final String? semanticLabel;
 
   @override
+  State<SambaCard> createState() => _SambaCardState();
+}
+
+class _SambaCardState extends State<SambaCard> {
+  bool _focused = false;
+
+  @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final SambaColors samba = theme.extension<SambaColors>()!;
+    // El foco de teclado se dibuja igual que la selección: sin un borde de
+    // acento, el resalte por defecto de InkWell es un velo al 12% que sobre
+    // Charcoal no se distingue, y recorrer la lista con las flechas se
+    // convierte en avanzar a ciegas.
+    final bool highlighted = widget.selected || _focused;
     final BorderSide border = BorderSide(
-      color: selected ? theme.colorScheme.primary : theme.colorScheme.outline,
-      width: selected ? 2 : 1,
+      color: highlighted
+          ? theme.colorScheme.primary
+          : theme.colorScheme.outline,
+      width: highlighted ? 2 : 1,
     );
 
     return Semantics(
-      button: onTap != null,
-      selected: selected,
-      label: semanticLabel,
+      button: widget.onTap != null,
+      selected: widget.selected,
+      label: widget.semanticLabel,
       child: Material(
-        color: selected ? samba.surfaceElevated : theme.colorScheme.surface,
+        color: highlighted ? samba.surfaceElevated : theme.colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(Radii.card),
           side: border,
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: onTap,
+          onTap: widget.onTap,
+          onFocusChange: (bool value) => setState(() => _focused = value),
           hoverColor: samba.surfaceElevated,
           borderRadius: BorderRadius.circular(Radii.card),
-          child: Padding(padding: padding, child: child),
+          child: Padding(padding: widget.padding, child: widget.child),
         ),
       ),
     );

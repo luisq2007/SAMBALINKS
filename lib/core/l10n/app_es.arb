@@ -471,5 +471,22 @@
   },
   "clearLibraryTypeToConfirm": "Escribe BORRAR para confirmar",
   "clearLibraryKeyword": "BORRAR",
-  "clearLibraryDone": "Biblioteca borrada"
+  "clearLibraryDone": "Biblioteca borrada",
+  "dropHint": "Suelta el enlace para guardarlo",
+  "dropSaved": "{count, plural, =1{1 enlace guardado} other{{count} enlaces guardados}}",
+  "@dropSaved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dropNothingUseful": "Ahí no había ningún enlace",
+  "shortcutSearch": "Buscar",
+  "shortcutAddLink": "Añadir enlace",
+  "shortcutFilters": "Filtros",
+  "shortcutClose": "Cerrar",
+  "clipboardSuggestionTitle": "Tienes un enlace copiado",
+  "clipboardSuggestionSave": "Guardar",
+  "clipboardSuggestionDismiss": "Ahora no"
 }

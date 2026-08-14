@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -258,6 +259,52 @@ class CardSortController extends AsyncNotifier<CardSort> {
         .read(settingsDaoProvider)
         .write(SettingsKeys.defaultSort, sort.name);
   }
+}
+
+/// Modo de apariencia elegido por el usuario, persistido en `settings`.
+///
+/// Por defecto **Sistema** (§36 del PRD): la app sigue al dispositivo mientras
+/// nadie diga lo contrario.
+final AsyncNotifierProvider<ThemeModeController, ThemeMode> themeModeProvider =
+    AsyncNotifierProvider<ThemeModeController, ThemeMode>(
+      ThemeModeController.new,
+    );
+
+class ThemeModeController extends AsyncNotifier<ThemeMode> {
+  @override
+  Future<ThemeMode> build() async {
+    final String? stored = await ref
+        .watch(settingsDaoProvider)
+        .read<String>(SettingsKeys.theme);
+    return ThemeMode.values.firstWhere(
+      (ThemeMode value) => value.name == stored,
+      orElse: () => ThemeMode.system,
+    );
+  }
+
+  Future<void> setMode(ThemeMode mode) async {
+    state = AsyncData<ThemeMode>(mode);
+    await ref.read(settingsDaoProvider).write(SettingsKeys.theme, mode.name);
+  }
+}
+
+// --- Atajos de escritorio ---
+
+/// Contador que se incrementa cada vez que se pide enfocar la búsqueda.
+///
+/// Un contador y no un booleano: pedirlo dos veces seguidas tiene que volver a
+/// enfocar, y con un booleano el segundo aviso no cambiaría el estado.
+final NotifierProvider<ShortcutSignal, int> searchShortcutProvider =
+    NotifierProvider<ShortcutSignal, int>(ShortcutSignal.new);
+
+final NotifierProvider<ShortcutSignal, int> filtersShortcutProvider =
+    NotifierProvider<ShortcutSignal, int>(ShortcutSignal.new);
+
+class ShortcutSignal extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void fire() => state = state + 1;
 }
 
 // --- Arranque ---

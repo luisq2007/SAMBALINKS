@@ -21,15 +21,22 @@ import '../domain/url_extractor.dart';
 /// sin categoría, es decir, en la Bandeja. Todo lo demás —notas, categorías,
 /// estado— se edita después desde el detalle, que ya existe.
 class AddLinkSheet extends ConsumerStatefulWidget {
-  const AddLinkSheet({super.key});
+  const AddLinkSheet({this.initialUrl, super.key});
+
+  /// URL con la que abrir la hoja ya rellenada.
+  ///
+  /// La usa la sugerencia de portapapeles del escritorio: el usuario ya dijo
+  /// que sí, así que volver a pedirle la URL sería absurdo. Sigue pudiendo
+  /// editarla antes de guardar.
+  final String? initialUrl;
 
   /// Abre la hoja. Devuelve el enlace creado, o `null` si se canceló.
-  static Future<LinkCard?> show(BuildContext context) {
+  static Future<LinkCard?> show(BuildContext context, {String? initialUrl}) {
     return showModalBottomSheet<LinkCard>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (BuildContext context) => const AddLinkSheet(),
+      builder: (BuildContext context) => AddLinkSheet(initialUrl: initialUrl),
     );
   }
 
@@ -38,7 +45,9 @@ class AddLinkSheet extends ConsumerStatefulWidget {
 }
 
 class _AddLinkSheetState extends ConsumerState<AddLinkSheet> {
-  final TextEditingController _controller = TextEditingController();
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialUrl,
+  );
   final FocusNode _focusNode = FocusNode();
 
   String? _error;

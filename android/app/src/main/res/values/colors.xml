@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#0D3C51</color>
+    <!-- Fondo de la pantalla de arranque: el mismo `bg` del tema claro (§9.1),
+         para que el salto al primer frame de Flutter no se vea. -->
+    <color name="splash_background">#F4F7F8</color>
 </resources>

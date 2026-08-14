@@ -60,7 +60,7 @@ La obtención de metadata **directa desde el dispositivo** expone la IP del usua
 | Preferencias | `shared_preferences` | ^2.5.5 | Sólo bootstrap (tema). El resto en tabla `settings` |
 | Modelos | `freezed` ^3.2.5, `json_serializable` ^6.14.1 | | |
 | Utilidades | `url_launcher` ^6.3.2, `intl` **^0.20.2**, `collection` ^1.19.1 | | `intl` lo fija `flutter_localizations` del SDK: exige 0.20.2 exacto, no 0.20.3 (verificado en F0) |
-| Desktop | `desktop_drop` ^0.7.1, `window_manager` ^0.5.2 | | Sólo Fase 15 |
+| Desktop | `desktop_drop` ^0.7.1 | | Sólo Fase 15. `window_manager` se descartó en la F15: la ventana se configura en Swift |
 | Tests | `mocktail` ^1.0.5 | | |
 
 **Descartado:** `metadata_fetch` (última publicación 2024-09, sin mantenimiento) y `any_link_preview`. La cadena de prioridad de §9 del PRD es específica y requiere control total; el extractor propio son ~180 líneas totalmente testeables y elimina una dependencia de riesgo.
@@ -891,7 +891,20 @@ Comprobado además en dispositivo de principio a fin: exportar → hoja de compa
 
 ---
 
-#### Fase 14 — Ajustes y tema · 1.5 d
+#### Fase 14 — Ajustes y tema · 1.5 d — ✅ COMPLETADA (2026-08-13)
+
+**Verificación:** elegir Oscuro, **cerrar la app por completo y reabrirla** deja la app en oscuro; en la base queda `theme: "dark"`. 229 tests.
+
+**Entregado**
+- Selector Sistema / Claro / Oscuro (§36), por defecto Sistema, persistido en `settings`
+- Sección Datos con exportar e importar (F13)
+- Acerca de, con la versión leída del paquete y la política de privacidad local
+- Borrar biblioteca con doble confirmación
+
+**Decisión: borrar la biblioteca exige escribir BORRAR.** Un botón "¿Seguro?" se pulsa por inercia; escribir la palabra obliga a leer cuántos enlaces se van a perder. Es la única acción de la app que no se puede deshacer.
+
+**Corrección de una trampa que se arrastraba desde la F3:** `DriftCategoryRepository.create` calculaba el `sortOrder` con `watchAll().first` —un stream— sólo para contar. Eso obliga a que quien llame viva en un entorno con reloj real, y dejaba colgado cualquier test de widget que creara una categoría. Sustituido por un `count()` directo en el DAO.
+
 
 **Entregables**
 - Selector de apariencia: Sistema / Claro / Oscuro (§36), por defecto Sistema
@@ -904,7 +917,33 @@ Comprobado además en dispositivo de principio a fin: exportar → hoja de compa
 
 ---
 
-#### Fase 15 — Escritorio y accesibilidad · 2.5 d
+#### Fase 15 — Escritorio y accesibilidad · 2.5 d — ✅ COMPLETADA (2026-08-14)
+
+262 tests (eran 235). `flutter analyze` sin issues. Compila y arranca en macOS; el APK de Android sigue construyéndose sin cambios.
+
+**Entregado**
+- Atajos de §40 con 6 tests: `CMD/CTRL+K` y `CMD/CTRL+F` buscan, `CMD/CTRL+N` añade enlace, `CMD/CTRL+SHIFT+F` abre filtros. Se declaran `meta` y `control` a la vez porque el mismo binario corre en las tres plataformas
+- **Arrastrar enlaces desde el navegador a la ventana** (`desktop_drop`) — la ruta de captura en escritorio, que es la mitigación del riesgo R3
+- Tamaño mínimo y memoria de geometría de la ventana
+- Navegación con flechas entre tarjetas y `Enter` para abrir
+- Sugerencia del enlace que hay en el portapapeles al volver a la ventana
+- Paso de accesibilidad con 12 comprobaciones automáticas
+
+**Desviación: sin `window_manager`.** Arrastra `screen_retriever_macos`, que declara macOS 10.14 y rompe la compilación contra el mínimo 10.15 de Flutter. Se resolvió de forma nativa en `MainFlutterWindow.swift` con `minSize` y `setFrameAutosaveName`, que es justo lo que hace macOS por sí solo. Menos dependencias y menos superficie de fallo.
+
+**Las flechas ya funcionaban; lo que faltaba era verlo.** El recorrido con flechas y `Enter` no necesitó código: Flutter mapea las flechas a `DirectionalFocusIntent` y el `InkWell` de la tarjeta ya responde a `Enter`. Lo que sí faltaba era el indicador de foco. `SambaCard` se apoyaba en el resalte por defecto —un velo al 12%— que sobre Charcoal no se distingue: la navegación funcionaba a ciegas. Ahora la tarjeta enfocada dibuja el mismo borde de acento que la seleccionada. Tres tests cubren el recorrido, el borde y —lo que de verdad podía romperse— que el foco **arrastra el scroll consigo**: la lista es virtualizada y las tarjetas aún no construidas no están en el árbol de foco, así que sin eso el recorrido se clavaría en el borde inferior de la ventana.
+
+**Portapapeles: sólo escritorio, y por la razón de la F9.5.** Android avisa con un mensaje del sistema cada vez que una app lee el portapapeles, y una app que fisgonea sola contradice el "Privacy First" del producto. En macOS no existe ese aviso y copiar la URL de la barra del navegador es el gesto natural del escritorio. La sugerencia es pasiva: una tarjeta en la esquina que no roba el foco, no bloquea nada, no vuelve tras descartarla y **nunca guarda por su cuenta**. Tampoco propone un enlace que ya esté en la biblioteca. El gate se comprueba con `defaultTargetPlatform` y no con `Platform.isMacOS` precisamente para que un test pueda comprobarlo: hay uno que falla si alguien lee el portapapeles en móvil.
+
+**Accesibilidad: las guías de `flutter_test`, no criterios propios.** Objetivo táctil ≥44 px (§15, que es también el mínimo de Apple), toda zona pulsable con etiqueta legible por un lector de pantalla y contraste de texto suficiente, sobre Lista, Kanban, Categorías y las dos secciones de Ajustes, **en tema claro y oscuro**, más el panel de filtros y el detalle abiertos —que es donde se acumulan los controles pequeños—. Las cinco pantallas pasaron a la primera, incluso contra el listón más alto de Android (48 px). Antes de darlo por bueno se comprobó que el arnés sabe fallar: un objetivo de 10×10 lo detecta y lo señala.
+
+**Comprobado en macOS real:** la app arranca y, con una URL en el portapapeles, la sugerencia aparece en la esquina con el enlace correcto.
+
+**Queda una comprobación manual, que no es automatizable desde aquí**
+- Pulsar `CMD+K`, `CMD+F`, `CMD+N` y `CMD+SHIFT+F` en la app de macOS. Inyectar pulsaciones exige permisos de accesibilidad y grabación de pantalla del sistema, que no se conceden desde una terminal. Los cuatro atajos tienen test unitario.
+- Arrastrar un enlace desde Chrome hasta la ventana.
+- Barrido con VoiceOver (macOS) y TalkBack (Android). Las guías automáticas cubren tamaño, etiqueta y contraste; el orden de lectura real sólo se juzga escuchándolo.
+
 
 **Entregables**
 - Atajos de §40 (con el ajuste de §4.5 de este plan)
@@ -918,7 +957,36 @@ Comprobado además en dispositivo de principio a fin: exportar → hoja de compa
 
 ---
 
-#### Fase 16 — QA contra criterios de aceptación · 1.5 d
+#### Fase 16 — QA contra criterios de aceptación · 1.5 d — ⚠️ PARCIAL (2026-08-14)
+
+264 tests. `flutter analyze` sin issues. APK release y profile construidos y medidos en emulador.
+
+**Entregado**
+- **Prueba de carga con 5.000 enlaces**, importados por el camino real de la F13 (`LibraryBackupService.import`) sobre una base **en disco**, no en memoria
+- **Splash con identidad de marca** en Android, con variante oscura de verdad, y en iOS
+- `docs/release.md` — proceso de release de las tres plataformas
+- `docs/qa-manual.md` — la matriz manual como lista de comprobación con fecha y versión por plataforma
+
+**Los números, medidos y no estimados**
+
+| Medida | Resultado | Umbral (§4.3) |
+|---|---|---|
+| Búsqueda sobre 5.000 enlaces | 0,33 ms | <150 ms |
+| Primera página (40) | 0,67 ms | <150 ms |
+| Página con offset 4.000 | 0,30 ms | <150 ms |
+| Consulta de Bandeja | 0,34 ms | <150 ms |
+| Contadores por estado | 0,25 ms | <150 ms |
+| Importar 5.000 enlaces | 1,8 s | — |
+
+Se midieron en **microsegundos a propósito**: en milisegundos las cinco daban 0, y un umbral que se cumple con un 0 no vigila nada — no distingue "rápido" de "no se ha ejecutado".
+
+**El arranque en frío no cumple el <2 s, y lo interesante es por qué no.** En release sobre el emulador de Android son ~2,9 s (2.774 / 3.098 / 2.857 / 3.129 ms). Lo que decide qué hacer con ese dato es la comparación que se midió después: **con la biblioteca vacía tarda lo mismo** (3.838 / 4.687 / 4.989 ms en profile, frente a 4.032 / 4.796 / 4.086 ms con las 5.000 tarjetas). Es decir, las 5.000 tarjetas **no cuestan nada al arrancar** —la lista pagina de 40 en 40 y los contadores son agregados indexados—, y los ~2,9 s son el suelo del emulador, no de la biblioteca. Un emulador x86 sobre un Mac no es un teléfono: **el criterio hay que remedirlo en hardware real** antes de declararlo cumplido o incumplido. Lo que sí queda demostrado es que el volumen de datos no es la causa.
+
+**Splash: no era sólo poner el logo.** Estaba el de fábrica de Flutter, blanco puro y vacío. Ahora usa `bg` del tema claro (`#F4F7F8`) y **Raven (`#061E29`) en oscuro** mediante `values-night/colors.xml`; sin esa segunda mitad, arrancar en modo oscuro es un destello blanco antes de la app. Comprobado en el emulador en ambos modos. En iOS las `LaunchImage` eran el píxel transparente de 1×1 que genera `flutter create`; ahora llevan el logo a 1x/2x/3x sobre el fondo de marca.
+
+El nombre visible y los iconos ya estaban correctos en las tres plataformas desde la F1A: se verificaron, no se tocaron.
+
+**Bloqueado: el test de integración de los 20 criterios de §55.** El PRD no está en el repositorio y §55 no se transcribió nunca al plan. De los 20 criterios sólo se conocen por referencia los rangos que citaron las fases anteriores (1–6 compartir, 7–9 categorías, 10–11 Kanban); del 12 al 20 no hay ni enunciado. Escribirlos de memoria sería inventar el examen y aprobarlo, que es justo lo contrario de lo que hace esta fase. **Hace falta el texto de §55 para continuar.**
 
 **Entregables**
 - Test de integración que ejecuta los 20 pasos de §55 de principio a fin

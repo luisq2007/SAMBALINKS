@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- `bg` del tema oscuro (Raven). Sin esto el arranque en oscuro es un
+         destello blanco antes de la app. -->
+    <color name="splash_background">#061E29</color>
+</resources>

@@ -16,7 +16,10 @@ import '../../features/links/presentation/link_detail_pane.dart';
 import '../../features/sharing/domain/incoming_share.dart';
 import '../../features/sharing/presentation/incoming_shares_provider.dart';
 import '../../features/sharing/presentation/quick_save_sheet.dart';
+import 'app_shortcuts.dart';
 import 'breakpoints.dart';
+import 'clipboard_link_suggestion.dart';
+import 'link_drop_target.dart';
 
 class AdaptiveShell extends ConsumerStatefulWidget {
   const AdaptiveShell({
@@ -97,7 +100,7 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
       inboxCount: inboxCount,
     );
 
-    return switch (windowClass) {
+    final Widget shell = switch (windowClass) {
       SambaWindowClass.mobile => _buildMobile(context, l10n, counts),
       SambaWindowClass.tablet => _buildTablet(context, l10n, counts),
       SambaWindowClass.desktop => _buildDesktop(
@@ -115,6 +118,23 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
         showDetailPane: true,
       ),
     };
+
+    // Los atajos y el arrastre envuelven a todo el shell: valen sea cual sea
+    // la pestaña activa. En móvil ambos son inertes.
+    return AppShortcuts(
+      actions: AppShortcutActions(
+        onSearch: () {
+          _select(0);
+          ref.read(searchShortcutProvider.notifier).fire();
+        },
+        onAddLink: () => unawaited(AddLinkSheet.show(context)),
+        onFilters: () {
+          _select(0);
+          ref.read(filtersShortcutProvider.notifier).fire();
+        },
+      ),
+      child: LinkDropTarget(child: ClipboardLinkSuggestion(child: shell)),
+    );
   }
 
   Widget _buildMobile(
@@ -192,8 +212,7 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
                   setState(() => _sidebarExpanded = !_sidebarExpanded),
               onToggleTheme: widget.onToggleTheme,
               onOpenInbox: () => context.go(AppRoutes.inbox),
-              onOpenCategory: (String id) =>
-                  context.go(AppRoutes.category(id)),
+              onOpenCategory: (String id) => context.go(AppRoutes.category(id)),
             ),
             const VerticalDivider(width: 1),
             Expanded(

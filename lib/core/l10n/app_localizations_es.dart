@@ -885,4 +885,42 @@ class L10nEs extends L10n {
 
   @override
   String get clearLibraryDone => 'Biblioteca borrada';
+
+  @override
+  String get dropHint => 'Suelta el enlace para guardarlo';
+
+  @override
+  String dropSaved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count enlaces guardados',
+      one: '1 enlace guardado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dropNothingUseful => 'Ahí no había ningún enlace';
+
+  @override
+  String get shortcutSearch => 'Buscar';
+
+  @override
+  String get shortcutAddLink => 'Añadir enlace';
+
+  @override
+  String get shortcutFilters => 'Filtros';
+
+  @override
+  String get shortcutClose => 'Cerrar';
+
+  @override
+  String get clipboardSuggestionTitle => 'Tienes un enlace copiado';
+
+  @override
+  String get clipboardSuggestionSave => 'Guardar';
+
+  @override
+  String get clipboardSuggestionDismiss => 'Ahora no';
 }

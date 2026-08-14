@@ -94,7 +94,19 @@ class LibraryBackupService {
   /// JSON con sangrado: un backup se abre a veces con un editor de texto y
   /// una sola línea de 2 MB no hay quien la lea.
   Future<String> exportJson() async {
-    return const JsonEncoder.withIndent('  ').convert((await snapshot()).toJson());
+    return const JsonEncoder.withIndent(
+      '  ',
+    ).convert((await snapshot()).toJson());
+  }
+
+  /// Borra enlaces y categorías. **No** toca los ajustes: el tema elegido no
+  /// es parte de la biblioteca.
+  Future<void> clearLibrary() async {
+    await _db.transaction(() async {
+      // El CASCADE se lleva las relaciones.
+      await _db.delete(_db.cards).go();
+      await _db.delete(_db.categories).go();
+    });
   }
 
   // --- Importar ---

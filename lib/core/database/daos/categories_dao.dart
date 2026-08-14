@@ -58,6 +58,17 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
     );
   }
 
+  /// Cuántas categorías hay. Consulta directa y no `watchAll().first`: un
+  /// stream para contar obliga a que quien llame viva en un entorno con reloj
+  /// real, y eso deja los tests de widget colgados.
+  Future<int> count() async {
+    final Expression<int> total = categories.id.count();
+    final TypedResult row = await (selectOnly(
+      categories,
+    )..addColumns(<Expression<Object>>[total])).getSingle();
+    return row.read(total) ?? 0;
+  }
+
   Future<Category?> findById(String id) {
     return (select(
       categories,

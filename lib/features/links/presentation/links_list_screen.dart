@@ -46,6 +46,7 @@ class _LinksListScreenState extends ConsumerState<LinksListScreen> {
   static const int _pageSize = 40;
 
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
   Timer? _searchDebounce;
   String _query = '';
   late LinkListFilters _filters;
@@ -63,6 +64,7 @@ class _LinksListScreenState extends ConsumerState<LinksListScreen> {
   void dispose() {
     _searchDebounce?.cancel();
     _searchController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -97,8 +99,34 @@ class _LinksListScreenState extends ConsumerState<LinksListScreen> {
     });
   }
 
+  Future<void> _openFilters(BuildContext context) async {
+    final List<Category> categories =
+        ref.read(categoriesProvider).asData?.value ?? const <Category>[];
+    final LinkListFilters? value = await LinkFiltersSheet.show(
+      context: context,
+      initial: _filters,
+      options: LinkFilterOptions(categories: categories),
+    );
+    if (value != null && mounted) {
+      _setFilters(value);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Atajos de escritorio: CMD+K / CMD+F enfocan la búsqueda, CMD+SHIFT+F
+    // abre los filtros.
+    ref.listen<int>(searchShortcutProvider, (int? _, int _) {
+      _searchFocus.requestFocus();
+      _searchController.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: _searchController.text.length,
+      );
+    });
+    ref.listen<int>(filtersShortcutProvider, (int? _, int _) {
+      unawaited(_openFilters(context));
+    });
+
     final CardSort sort =
         ref.watch(cardSortPreferenceProvider).asData?.value ?? CardSort.newest;
     final CardFilter effectiveFilter = _filters.toCardFilter(query: _query);
@@ -115,8 +143,6 @@ class _LinksListScreenState extends ConsumerState<LinksListScreen> {
     final Map<CardStatus, int> statusCounts =
         ref.watch(scopedStatusCountsProvider(statusCountQuery)).asData?.value ??
         const <CardStatus, int>{};
-    final List<Category> categories =
-        ref.watch(categoriesProvider).asData?.value ?? const <Category>[];
     final List<IncomingShare> incoming = ref.watch(incomingSharesProvider);
 
     final List<AsyncValue<List<LinkCard>>> pages = <AsyncValue<List<LinkCard>>>[
@@ -156,6 +182,7 @@ class _LinksListScreenState extends ConsumerState<LinksListScreen> {
           ),
         _ListToolbar(
           controller: _searchController,
+          focusNode: _searchFocus,
           query: _query,
           filters: _filters,
           sort: sort,
@@ -170,16 +197,7 @@ class _LinksListScreenState extends ConsumerState<LinksListScreen> {
           onClearSearch: _clearSearch,
           onStatusChanged: (Set<CardStatus> statuses) =>
               _setFilters(_filters.withStatuses(statuses)),
-          onShowFilters: () async {
-            final LinkListFilters? value = await LinkFiltersSheet.show(
-              context: context,
-              initial: _filters,
-              options: LinkFilterOptions(categories: categories),
-            );
-            if (value != null && mounted) {
-              _setFilters(value);
-            }
-          },
+          onShowFilters: () => unawaited(_openFilters(context)),
           onClearFilters: () => _setFilters(LinkListFilters.empty),
           onSortChanged: (CardSort value) =>
               ref.read(cardSortPreferenceProvider.notifier).setSort(value),
@@ -491,6 +509,7 @@ class _LinkCardItem extends ConsumerWidget {
 class _ListToolbar extends StatelessWidget {
   const _ListToolbar({
     required this.controller,
+    required this.focusNode,
     required this.query,
     required this.filters,
     required this.sort,
@@ -508,6 +527,7 @@ class _ListToolbar extends StatelessWidget {
   });
 
   final TextEditingController controller;
+  final FocusNode focusNode;
   final String query;
   final LinkListFilters filters;
   final CardSort sort;
@@ -545,6 +565,7 @@ class _ListToolbar extends StatelessWidget {
               builder: (BuildContext context, BoxConstraints constraints) {
                 final Widget search = SambaTextField(
                   controller: controller,
+                  focusNode: focusNode,
                   hint: l10n.searchHint,
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: query.isEmpty

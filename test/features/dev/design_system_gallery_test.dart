@@ -1,13 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sambalinks/app.dart';
+import 'package:sambalinks/core/database/app_database.dart';
 import 'package:sambalinks/core/l10n/app_localizations.dart';
+import 'package:sambalinks/core/providers.dart';
 import 'package:sambalinks/core/theme/app_theme.dart';
 import 'package:sambalinks/core/theme/tokens.dart';
 import 'package:sambalinks/features/links/domain/enums.dart';
 import 'package:sambalinks/shared/widgets/widgets.dart';
 
+import '../../core/database/database_test_helpers.dart';
+
 void main() {
+  late AppDatabase db;
+
+  setUp(() => db = openTestDatabase());
+  tearDown(() => db.close());
+
+  /// La raíz lee la preferencia de tema desde `settings`, así que necesita un
+  /// ProviderScope con una base en memoria.
+  Future<void> pumpGallery(WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(db)],
+        child: const SambaLinksApp(initialRoute: '/dev/gallery'),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+  }
+
   Future<void> setSurface(WidgetTester tester, Size size) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -17,8 +39,7 @@ void main() {
     WidgetTester tester,
   ) async {
     await setSurface(tester, const Size(1200, 1000));
-    await tester.pumpWidget(const SambaLinksApp(initialRoute: '/dev/gallery'));
-    await tester.pump(const Duration(milliseconds: 400));
+    await pumpGallery(tester);
 
     expect(find.byType(SambaButton), findsWidgets);
     expect(find.byType(SambaTextField), findsNWidgets(2));
@@ -42,10 +63,7 @@ void main() {
   ]) {
     testWidgets('no desborda en tamaño $name', (WidgetTester tester) async {
       await setSurface(tester, size);
-      await tester.pumpWidget(
-        const SambaLinksApp(initialRoute: '/dev/gallery'),
-      );
-      await tester.pump(const Duration(milliseconds: 400));
+      await pumpGallery(tester);
 
       expect(tester.takeException(), isNull);
       expect(find.text('Galería de componentes'), findsOneWidget);
@@ -55,8 +73,7 @@ void main() {
   testWidgets('el control de la galería alterna claro y oscuro', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const SambaLinksApp(initialRoute: '/dev/gallery'));
-    await tester.pump(const Duration(milliseconds: 400));
+    await pumpGallery(tester);
     BuildContext context = tester.element(find.byType(Scaffold));
     final Brightness initial = Theme.of(context).brightness;
 

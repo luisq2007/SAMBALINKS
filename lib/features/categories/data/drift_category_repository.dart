@@ -84,7 +84,7 @@ class DriftCategoryRepository implements CategoryRepository {
       color: color,
       icon: icon,
       // Se añade al final de la lista existente.
-      sortOrder: (await _db.categoriesDao.watchAll().first).length,
+      sortOrder: await _db.categoriesDao.count(),
       createdAt: timestamp,
       updatedAt: timestamp,
     );
